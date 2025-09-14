@@ -88,6 +88,7 @@ class Client extends Connection {
             CurrentInputMode: 1,
             DefaultInputMode: 1,
             PlayFabId: v3().replace(/-/g, '').slice(0, 16).toLowerCase(),
+            SelfSignedId: v3(),
             UIProfile: 1,
             LanguageCode: 'en_US',
             MaxViewDistance: 12,

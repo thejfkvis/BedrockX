@@ -3,7 +3,7 @@ const { NethernetSignal } = require('./websocket/signal')
 
 /** @param {{ version?: number, host: string, port?: number, connectTimeout?: number, skipPing?: boolean }} options */
 function createClient(options) {
-    const client = new Client({ port: 19132, followPort: !options.realms, ...options, delayedInit: true })
+    const client = new Client({ port: 19132, ...options, delayedInit: true })
 
     client.on('connect_allowed', () => connect(client))
     client.init()

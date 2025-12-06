@@ -33,13 +33,25 @@ class Connection extends EventEmitter {
   }
 
   write(name, params) {
-    this.batch.addEncodedPacket(this.serializer.createPacketBuffer({ name, params }))
-    this.encryptionEnabled ? this.sendEncryptedBatch(this.batch) : this.sendDecryptedBatch(this.batch);
+    if (!this.batch?.addEncodedPacket) return
+
+    try {
+      this.batch.addEncodedPacket(this.serializer.createPacketBuffer({ name, params }))
+    } catch (error) {
+      console.log(error)
+    }
+
+    this.encryptionEnabled ? this.sendEncryptedBatch(this.batch) : this.sendDecryptedBatch(this.batch)
   }
 
   sendBuffer(buffer) {
-    this.batch.addEncodedPacket(buffer)
-    this.encryptionEnabled ? this.sendEncryptedBatch(this.batch) : this.sendDecryptedBatch(this.batch);
+    if (!this.batch?.addEncodedPacket) return
+
+    try {
+      this.batch.addEncodedPacket(buffer)
+    } catch (error) { }
+
+    this.encryptionEnabled ? this.sendEncryptedBatch(this.batch) : this.sendDecryptedBatch(this.batch)
   }
 
   sendDecryptedBatch(batch) {
@@ -53,10 +65,8 @@ class Connection extends EventEmitter {
 
   sendMCPE(buffer, immediate) {
     try {
-      if (this.connection.connected) {
-        this.connection.sendReliable(buffer, immediate)
-        this.batch.flush();
-      }
+      this.connection.sendReliable(buffer, immediate)
+      this.batch.flush();
     } catch {}
   }
 

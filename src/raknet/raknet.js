@@ -8,11 +8,7 @@ class Client extends EventEmitter {
     this.client = new RakClient(hostname, port, options)
     this.startListening()
   }
-
-  ping() {
-    return this.client.ping()
-  }
-
+  
   connect() {
     return this.client.connect(this)
   }

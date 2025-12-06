@@ -137,3 +137,7 @@ dist
 
 # .lock
 package-lock.json
+
+# example folder for testing on development
+example
+auth

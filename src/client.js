@@ -1,12 +1,16 @@
 const { ClientStatus, Connection } = require('./connection')
 const { createDeserializer, createSerializer } = require('./transforms/serializer')
-const { KeyExchange } = require('./handshake/keyExchange')
 const { NethernetClient } = require('./nethernet')
 const { RakClient } = require('./rak')
 const { authenticate } = require('./client/auth')
 
 const JWT = require('jsonwebtoken')
-const { v3 } = require('uuid-1345')
+const crypto = require('crypto')
+
+const { v3, v4, NIL } = require('uuid')
+
+const pem = { format: 'pem', type: 'sec1' }
+const der = { format: 'der', type: 'spki' }
 
 class Client extends Connection {
     connection
@@ -28,7 +32,9 @@ class Client extends Connection {
         this.deserializer = createDeserializer()
         this.features = { compressorInHeader: true }
 
-        KeyExchange(this, null, this.options)
+        this.ecdhKeyPair = crypto.generateKeyPairSync('ec', { namedCurve: "secp384r1" })
+        this.clientX509 = this.ecdhKeyPair.publicKey.export(der).toString('base64')
+        this.privateKeyPEM = this.ecdhKeyPair.privateKey.export(pem)
 
         switch (this.options.transport) {
             case "NETHERNET":
@@ -57,8 +63,7 @@ class Client extends Connection {
     }
 
     onEncapsulated = (encapsulated) => {
-        const buffer = Buffer.from(encapsulated.buffer)
-        process.nextTick(() => this.handle(buffer))
+        this.handle(Buffer.from(encapsulated.buffer))
     }
 
     _connect = async () => {
@@ -83,12 +88,12 @@ class Client extends Connection {
             ServerAddress: `${this.options.host}:${this.options.port}`,
             PersonaSkin: true,
             DeviceOS: 1,
-            DeviceId: v3().replace(/-/g, ''),
+            DeviceId: v3(v4(), NIL).replace(/-/g, ''),
             DeviceModel: 'iPhone11,8',
             CurrentInputMode: 1,
             DefaultInputMode: 1,
-            PlayFabId: v3().replace(/-/g, '').slice(0, 16).toLowerCase(),
-            SelfSignedId: v3(),
+            PlayFabId: v3(v4(), NIL).replace(/-/g, '').slice(0, 16).toLowerCase(),
+            SelfSignedId: v3(v4(), NIL),
             UIProfile: 1,
             LanguageCode: 'en_US',
             MaxViewDistance: 12,
@@ -125,17 +130,12 @@ class Client extends Connection {
         try {
             var des = this.deserializer.parsePacketBuffer(packet) // eslint-disable-line
         } catch (e) {
-            // Dump information about the packet only if user is not handling error event.
-            if (this.listenerCount('error') === 0) this.deserializer.dumpFailedBuffer(packet)
             this.emit('error', e)
             return
         }
 
         // Abstract some boilerplate before sending to listeners
         switch (des.data.name) {
-            case 'server_to_client_handshake':
-                this.emit('client.server_handshake', des.data.params)
-                break
             case 'network_settings':
                 this.compressionAlgorithm = packet.compression_algorithm || 'deflate'
                 this.compressionThreshold = packet.compression_threshold
@@ -143,6 +143,17 @@ class Client extends Connection {
                 this.batch.updateCompressionSettings(this)
 
                 this.sendLogin()
+                break
+            case 'server_to_client_handshake':
+                const [header, payload] = des.data.params.token.split('.', 2).map(part => JSON.parse(Buffer.from(part, 'base64url').toString()))
+
+                if (!this.disableEncryption) {
+                    this.secretKeyBytes = crypto.createHash('sha256').update(Buffer.from(payload.salt, 'base64')).update(crypto.diffieHellman({ privateKey: this.ecdhKeyPair.privateKey, publicKey: crypto.createPublicKey({ key: Buffer.from(header.x5u, 'base64'), ...der }) })).digest()
+                    this.startEncryption(this.secretKeyBytes.slice(0, 16))
+                }
+
+                this.write('client_to_server_handshake', {})
+                this.status = ClientStatus.Initializing
                 break
             case 'disconnect': // Client kicked
                 this.emit('kick', des.data.params)

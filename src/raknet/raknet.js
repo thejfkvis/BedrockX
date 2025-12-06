@@ -58,9 +58,7 @@ class Client extends EventEmitter {
             }
           } else {
             this.emit('encapsulated', {
-              buffer: buf,
-              address,
-              guid
+              buffer: buf
             });
           }
         } catch (e) {

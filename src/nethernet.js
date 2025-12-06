@@ -21,8 +21,8 @@ class NethernetClient {
       this.connected = false
     });
 
-    this.nethernet.on('encapsulated', (data, address) => {
-      this.onEncapsulated({ buffer: data }, address)
+    this.nethernet.on('encapsulated', (buffer) => {
+      this.onEncapsulated({ buffer })
     });
   }
 

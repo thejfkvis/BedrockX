@@ -25,9 +25,7 @@ class Connection {
     if (reliable) {
       this.reliable = reliable
       this.reliable.binaryType = 'arraybuffer'
-
       this.reliable.onmessage = (event) => this.handleMessage(event.data)
-
       this.reliable.onopen = () => this.flushQueue()
     }
 
@@ -43,17 +41,16 @@ class Connection {
     if (payload.length < 2) throw new Error('Unexpected EOF')
 
     const segments = payload[0]
-    const body = payload.subarray(1)
+    const body = payload.slice(1)
 
     if (this.promisedSegments > 0 && this.promisedSegments - 1 !== segments) throw new Error(`Invalid promised segments: expected ${this.promisedSegments - 1}, got ${segments}`)
 
     this.promisedSegments = segments
-    this.buf = this.buf ? Buffer.concat([this.buf, body]) : body
+    const buf = this.buf ? Buffer.concat([this.buf, body]) : body
 
     if (this.promisedSegments > 0) return
 
-    this.nethernet.emit('encapsulated', this.buf, this.address)
-    this.buf = null
+    this.nethernet.emit('encapsulated', buf)
   }
 
   send(data) {
@@ -70,29 +67,26 @@ class Connection {
   }
 
   sendNow(data) {
-    let n = 0
-    let segments = Math.ceil(data.length / MAX_MESSAGE_SIZE)
+    const segments = Math.ceil(data.length / MAX_MESSAGE_SIZE)
+    const buffers = Array(segments)
 
-    for (let i = 0; i < data.length; i += MAX_MESSAGE_SIZE) {
-      const remainingSegments = segments - ~~(i / MAX_MESSAGE_SIZE) - 1
-      const end = Math.min(i + MAX_MESSAGE_SIZE, data.length)
-      const fragLength = end - i
-
-      const message = Buffer.allocUnsafe(1 + fragLength)
-      message[0] = remainingSegments
-      data.copy(message, 1, i, end)
-
-      this.reliable?.send(message)
-      n += fragLength
+    for (let i = 0; i < segments; i++) {
+      buffers[i] = data.slice(i * MAX_MESSAGE_SIZE, Math.min((i + 1) * MAX_MESSAGE_SIZE, data.length))
     }
 
-    return n
+    for (let i = 0; i < buffers.length; i++) {
+      const message = Buffer.allocUnsafe(1 + buffers[i].length)
+      message[0] = segments - 1 - i
+      buffers[i].copy(message, 1)
+      this.reliable?.send(message)
+    }
+
+    return data.length
   }
 
   flushQueue() {
-    while (this.sendQueue.length > 0) {
-      const data = this.sendQueue.shift()
-      this.sendNow(data)
+    for (let i = 0; i < this.sendQueue.length; i++) {
+      this.sendNow(this.sendQueue[i])
     }
   }
 

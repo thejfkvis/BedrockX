@@ -36,21 +36,22 @@ class Connection {
   }
 
   handleMessage(data) {
-    const payload = ensureBuffer(data)
+    data = ensureBuffer(data)
 
-    if (payload.length < 2) throw new Error('Unexpected EOF')
+    if (data.length < 2) throw new Error('Unexpected EOF')
 
-    const segments = payload[0]
-    const body = payload.slice(1)
+    const segments = data[0]
+    data = data.subarray(1)
 
     if (this.promisedSegments > 0 && this.promisedSegments - 1 !== segments) throw new Error(`Invalid promised segments: expected ${this.promisedSegments - 1}, got ${segments}`)
 
     this.promisedSegments = segments
-    const buf = this.buf ? Buffer.concat([this.buf, body]) : body
+    this.buf = this.buf ? Buffer.concat([this.buf, data]) : data
 
     if (this.promisedSegments > 0) return
 
-    this.nethernet.emit('encapsulated', buf)
+    this.nethernet.emit('encapsulated', this.buf)
+    this.buf = null;
   }
 
   send(data) {

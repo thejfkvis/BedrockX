@@ -1,4 +1,4 @@
-const MAX_MESSAGE_SIZE = 262143;
+const MAX_MESSAGE_SIZE = 50000; // 262143 IS MAX MESSAGE SIZE EXACT, lower because of larger packets
 
 const ensureBuffer = (data) => {
   if (Buffer.isBuffer(data)) return data

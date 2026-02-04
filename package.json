@@ -1,6 +1,6 @@
 {
   "name": "bedrockx",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -13,7 +13,7 @@
     "@jsprismarine/jsbinaryutils": "^5.5.3",
     "@roamhq/wrtc": "^0.9.1",
     "jsonwebtoken": "^9.0.2",
-    "minecraft-data": "^3.98.0",
+    "minecraft-data": "^3.103.0",
     "prismarine-auth": "^2.7.0",
     "prismarine-nbt": "^2.7.0",
     "protodef": "^1.19.0",

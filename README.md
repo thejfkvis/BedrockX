@@ -6,7 +6,7 @@ It only provides the Client along with NETHERNET support.
 
 I'll not provide any tutorials on how to use BedrockX. You can read the source code to learn how it works.
 
-Parts of NETHERNET Support is based off of [Atomic Protocol](https://github.com/AtomicTS/Atomic-Protocol) which is in TS.
+Parts of NETHERNET Support is based off of Atomic Protocol (Original Repository now deleted) by [Serial-V](https://github.com/Serial-V)
 
 Let me know of any issues you find.
 

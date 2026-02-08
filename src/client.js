@@ -138,8 +138,8 @@ class Client extends Connection {
         // Abstract some boilerplate before sending to listeners
         switch (des.data.name) {
             case 'network_settings':
-                this.compressionAlgorithm = packet.compression_algorithm || 'deflate'
-                this.compressionThreshold = packet.compression_threshold
+                this.compressionAlgorithm = des.data.params.compression_algorithm || 'deflate'
+                this.compressionThreshold = des.data.params.compression_threshold
                 this.compressionReady = true
                 this.batch.updateCompressionSettings(this)
 

@@ -237,8 +237,7 @@ class NethernetJSONRPC extends EventEmitter {
 
         const message = JSONBigInt.stringify({
             params: {
-                // Failed to set ice candidate error with signal.serverNetworkId, but works with this.serverNetworkId, which is the same value, weird!
-                toPlayerId: this.serverNetworkId,
+                toPlayerId: String(signal.serverNetworkId ?? this.serverNetworkId),
                 messageId: uuidv4,
                 message: JSONBigInt.stringify({
                     params: {

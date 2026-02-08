@@ -6,11 +6,12 @@ const SignalType = {
 }
 
 class SignalStructure {
-  constructor (type, connectionId, data, networkId) {
+  constructor (type, connectionId, data, networkId, serverNetworkId) {
     this.type = type
     this.connectionId = connectionId
     this.data = data
     this.networkId = networkId
+    this.serverNetworkId = serverNetworkId
   }
 
   toString () {
@@ -20,7 +21,7 @@ class SignalStructure {
   static fromString (message) {
     const [type, connectionId, ...data] = message.split(' ')
 
-    return new this(type, BigInt(connectionId), data.join(' '))
+    return new this(type, connectionId, data.join(' '))
   }
 }
 

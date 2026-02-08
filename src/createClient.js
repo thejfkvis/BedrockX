@@ -1,5 +1,6 @@
 const { Client } = require('./client')
 const { NethernetSignal } = require('./websocket/signal')
+const { NethernetJSONRPC } = require('./websocket/signal-jsonrpc')
 
 function createClient(options) {
     const client = new Client({ port: 19132, ...options, delayedInit: true })
@@ -11,8 +12,10 @@ function createClient(options) {
 }
 
 async function connect(client) {
-    if (client.options.transport === 'NETHERNET') {
-        client.nethernet.signalling = new NethernetSignal(client.connection.nethernet.networkId, client.options.authflow, client.options.version)
+    if (client.options.transport.includes("NETHERNET")) {
+        client.nethernet.signalling = client.options.transport === "NETHERNET_JSONRPC" 
+            ? new NethernetJSONRPC(client.connection.nethernet.networkId, client.options.authflow, client.options.version, client.options.networkId) 
+            : new NethernetSignal(client.connection.nethernet.networkId, client.options.authflow, client.options.version, client.options.networkId)
 
         await client.nethernet.signalling.connect()
 

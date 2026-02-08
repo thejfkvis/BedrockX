@@ -22,7 +22,7 @@ class Client extends Connection {
         this.compressionThreshold = 512
         this.compressionLevel = options.compressionLevel
 
-        if (this.options.transport === 'NETHERNET') this.nethernet = {}
+        if (this.options.transport.includes('NETHERNET')) this.nethernet = {}
 
         if (!options.delayedInit) this.init()
     }
@@ -38,6 +38,7 @@ class Client extends Connection {
 
         switch (this.options.transport) {
             case "NETHERNET":
+            case "NETHERNET_JSONRPC":
                 this.connection = new NethernetClient({ networkId: this.options.networkId })
 
                 this.batchHeader = null

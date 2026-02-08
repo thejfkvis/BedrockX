@@ -55,7 +55,7 @@ class Client extends EventEmitter {
     this.rtcConnection.onicecandidate = (event) => {
       if (!event.candidate) return
 
-      this.signalHandler(new SignalStructure(SignalType.CandidateAdd, this.connectionId, event.candidate.candidate, this.serverNetworkId))
+      this.signalHandler(new SignalStructure(SignalType.CandidateAdd, this.connectionId, event.candidate.candidate, this.networkId, this.serverNetworkId))
     }
 
     this.rtcConnection.onconnectionstatechange = () => {
@@ -77,7 +77,7 @@ class Client extends EventEmitter {
 
     await this.rtcConnection.setLocalDescription(localDescription);
 
-    this.signalHandler(new SignalStructure(SignalType.ConnectRequest, this.connectionId, sdp, this.serverNetworkId))
+    this.signalHandler(new SignalStructure(SignalType.ConnectRequest, this.connectionId, sdp, this.networkId, this.serverNetworkId))
   }
 
   processPacket(buffer, rinfo) {

@@ -2,6 +2,7 @@ const { EventEmitter, once } = require('node:events')
 const { WebSocket } = require('ws')
 const { SignalStructure } = require('../nethernet/index')
 const { v4 } = require("uuid")
+const JSONBigInt = require('json-bigint')({ useNativeBigInt: true })
 
 const MessageType = {
     RequestPing: 0,
@@ -183,8 +184,8 @@ class NethernetSignal extends EventEmitter {
     write(signal) {
         if (!this.ws) throw new Error('WebSocket not connected')
 
-        const message = JSON.stringify({ Type: MessageType.Signal, To: signal.networkId, Message: signal.toString() })
-
+        const message = JSONBigInt.stringify({ Type: MessageType.Signal, To: signal.serverNetworkId, Message: signal.toString() })
+        
         this.ws.send(message)
     }
 }

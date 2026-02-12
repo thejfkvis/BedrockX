@@ -2,7 +2,7 @@ const { ProtoDefCompiler } = require('protodef').Compiler
 const { FullPacketParser, Serializer } = require('protodef')
 
 // Find a way to make this dynamic later
-const proto = createProtocol("1.21.130")
+const proto = createProtocol("1.26.0")
 
 function createProtocol(version) {
   const protocol = require('minecraft-data')('bedrock_' + version).protocol

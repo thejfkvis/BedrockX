@@ -226,7 +226,7 @@ class NethernetJSONRPC extends EventEmitter {
         if (signal.toString().startsWith("CANDIDATEADD") && !this.candidates.includes(signal)) {
             this.candidates.length === 0 ? signal.data += " network-cost 50" : signal.data += " network-cost 10"
 
-            if (signal.data.includes("tcp")) return;
+            if (signal.data.includes("tcp") || signal.data.includes("::1")) return;
 
             this.candidates.push(signal)
             // Don't write yet, just store for later, and then we will write them after connectrequest

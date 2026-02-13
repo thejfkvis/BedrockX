@@ -37,7 +37,30 @@ class Client extends EventEmitter {
   }
 
   handleCandidate(signal) {
-    this.rtcConnection.addIceCandidate(new RTCIceCandidate(typeof signal.data === 'string' ? { candidate: signal.data, sdpMid: '0', sdpMLineIndex: 0 } : signal.data))
+    const rawData = typeof signal.data === 'string' ? signal.data : signal.data.candidate;
+
+    const parts = rawData.replace(/^candidate:/, "").trim().split(" ");
+
+    const parsedData = {
+      candidate: signal.data,
+      foundation: parts[0],
+      component: parseInt(parts[1]),
+      protocol: parts[2],
+      priority: parseInt(parts[3]),
+      address: parts[4],
+      port: parseInt(parts[5]),
+      type: parts[7],
+      sdpMid: signal.data.sdpMid || "0",
+      sdpMLineIndex: signal.data.sdpMLineIndex ?? 0
+    };
+
+    if (parts[8] === "raddr") parsedData.relatedAddress = parts[9];
+    if (parts[10] === "rport") parsedData.relatedPort = parseInt(parts[11]);
+
+    const ufragIndex = parts.indexOf("ufrag");
+    if (ufragIndex !== -1) parsedData.usernameFragment = parts[ufragIndex + 1];
+
+    this.rtcConnection.addIceCandidate(new RTCIceCandidate(parsedData)).catch(e => console.error("ICE:", e));
   }
 
   handleAnswer(signal) {
@@ -54,6 +77,8 @@ class Client extends EventEmitter {
 
     this.rtcConnection.onicecandidate = (event) => {
       if (!event.candidate) return
+
+      if (event.candidate.candidate.includes("tcp") || event.candidate.candidate.includes("::1") || event.candidate.candidate.includes("127.0.0.1")) return;
 
       this.signalHandler(new SignalStructure(SignalType.CandidateAdd, this.connectionId, event.candidate.candidate, this.networkId, this.serverNetworkId))
     }
@@ -120,6 +145,8 @@ class Client extends EventEmitter {
         this.handleAnswer(signal)
         break
       case SignalType.CandidateAdd:
+        if (signal.networkId === this.serverNetworkId) signal.networkId = this.networkId
+        
         this.handleCandidate(signal)
         break
     }

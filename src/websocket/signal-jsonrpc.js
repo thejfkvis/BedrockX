@@ -16,12 +16,14 @@ class NethernetJSONRPC extends EventEmitter {
         this.ws = null
         this.credentials = []
         this.candidates = []
+        this.signalCandidates = []
 
         this.pingInterval = null
         this.retryCount = 0
         this.destroyed = false
         this.lastLiveness = 0
         this.connectionId = null
+        this.didSendCandidates = false
     }
 
     async connect() {
@@ -182,10 +184,10 @@ class NethernetJSONRPC extends EventEmitter {
                 break
             case "Signaling_ReceiveMessage_v1_0":
                 this.ws.send(JSON.stringify({ id: message.id, result: null, jsonrpc: "2.0" }))
-                
+
                 for (const param of message.params) {
                     this.sendDeliveryNotification(param.From, param.Id)
-                    
+
                     let signalMessage = param.Message
                     try {
                         const parsed = JSON.parse(param.Message)
@@ -200,17 +202,38 @@ class NethernetJSONRPC extends EventEmitter {
                     } catch (e) {
                         console.error(e)
                     }
-                    
-                    const signal = SignalStructure.fromString(signalMessage)
-                    signal.networkId = param.From
-                    signal.serverNetworkId = this.serverNetworkId
-                    this.emit("signal", signal)
 
-                    if (signalMessage.startsWith("CONNECTRESPONSE") && signalMessage.includes(this.connectionId)) {
+                    let signal = SignalStructure.fromString(signalMessage)
+                    signal.connectionId = BigInt(signal.connectionId)
+                    signal.networkId = this.networkId
+                    signal.serverNetworkId = param.From ?? this.serverNetworkId
+
+                    if (signal.type === "CANDIDATEADD") {
+                        signal.data += " network-cost 10";
+
+                        if (!this.didSendCandidates) {
+                            this.signalCandidates.push(signal);
+                            return
+                        }
+                    }
+
+                    if (
+                        signal.type === "CONNECTRESPONSE" &&
+                        signal.connectionId === this.connectionId &&
+                        !this.didSendCandidates
+                    ) {
                         for (const candidate of this.candidates) {
                             this.write(candidate)
                         }
+
+                        for (const signalCandidate of this.signalCandidates) {
+                            this.emit("signal", signalCandidate)
+                        }
+
+                        this.didSendCandidates = true
                     }
+
+                    this.emit("signal", signal)
                 }
                 break
             default:
@@ -223,17 +246,17 @@ class NethernetJSONRPC extends EventEmitter {
 
         let uuidv4 = v4()
 
-        if (signal.toString().startsWith("CANDIDATEADD") && !this.candidates.includes(signal)) {
+        if (signal.type === "CANDIDATEADD" && !this.candidates.includes(signal)) {
             this.candidates.length === 0 ? signal.data += " network-cost 50" : signal.data += " network-cost 10"
 
-            if (signal.data.includes("tcp") || signal.data.includes("::1")) return;
+            if (signal.data.includes("tcp") || signal.data.includes("::1") || signal.data.includes("127.0.0.1")) return;
 
             this.candidates.push(signal)
             // Don't write yet, just store for later, and then we will write them after connectrequest
             return
         }
 
-        if (signal.toString().startsWith("CONNECTREQUEST")) this.connectionId = signal.connectionId
+        if (signal.type === "CONNECTREQUEST") this.connectionId = signal.connectionId
 
         const message = JSONBigInt.stringify({
             params: {
@@ -252,7 +275,7 @@ class NethernetJSONRPC extends EventEmitter {
             method: "Signaling_SendClientMessage_v1_0",
             id: uuidv4
         })
-        
+
         this.ws.send(message)
     }
 

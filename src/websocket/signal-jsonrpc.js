@@ -203,6 +203,8 @@ class NethernetJSONRPC extends EventEmitter {
                         console.error(e)
                     }
 
+                    if (signalMessage.includes("could not be delivered")) continue
+
                     let signal = SignalStructure.fromString(signalMessage)
                     signal.connectionId = BigInt(signal.connectionId)
                     signal.networkId = this.networkId

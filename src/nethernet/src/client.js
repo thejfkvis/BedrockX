@@ -64,7 +64,22 @@ class Client extends EventEmitter {
   }
 
   handleAnswer(signal) {
-    this.rtcConnection.setRemoteDescription({ type: 'answer', sdp: signal.data })
+    if (!this.rtcConnection) return
+
+    switch (this.rtcConnection.signalingState) {
+      case "stable":
+        console.error("Received answer in stable state, ignoring.")
+        return
+      case "closed":
+        console.error("Received answer for closed connection, ignoring.")
+        return
+    }
+
+    try {
+      this.rtcConnection.setRemoteDescription({ type: 'answer', sdp: signal.data })
+    } catch (e) {
+      console.error("Failed to set remote description:", e)
+    }
   }
 
   async createOffer() {

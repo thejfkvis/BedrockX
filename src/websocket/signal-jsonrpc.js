@@ -88,7 +88,7 @@ class NethernetJSONRPC extends EventEmitter {
     async init() {
         const xbl = await this.authflow.getMinecraftBedrockServicesToken({ version: this.version })
 
-        const address = `https://signal-northeurope.franchise.minecraft-services.net/ws/v1.0/messaging/connect`;
+        const address = `https://signal.franchise.minecraft-services.net/ws/v1.0/messaging/connect`;
 
         try {
             const ws = new WebSocket(address, { headers: { Authorization: xbl.mcToken, "session-id": this.networkId, "request-id": v4() } })
@@ -145,7 +145,7 @@ class NethernetJSONRPC extends EventEmitter {
         // 1006 closure
         // 1011 error
         // 4401 unauthorized
-        const retryable = [1006, 1011, 4401].includes(code) || code === 0
+        const retryable = [1000, 1006, 1011, 4401].includes(code) || code === 0
 
         if (retryable && this.retryCount < MAX_RETRIES) {
             this.retryCount++

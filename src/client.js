@@ -107,7 +107,7 @@ class Client extends Connection {
         this.write('login', {
             protocol_version: this.options.protocolVersion,
             tokens: {
-                identity: JSON.stringify({ AuthenticationType: 0, Certificate: JSON.stringify({ chain: this.chain }), Token: "" }),
+                identity: JSON.stringify({ AuthenticationType: 0, Certificate: JSON.stringify({ chain: this.chain }), Token: this.token }),
                 client: JWT.sign(payload, this.ecdhKeyPair.privateKey, { algorithm: 'ES384', header: { x5u: this.clientX509 } })
             }
         })

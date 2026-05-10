@@ -27,7 +27,7 @@ declare module 'bedrockx' {
         // Authflow to authenticate the user
         authflow: Authflow,
         // AuthTitles to specify the title to authenticate with, default is MinecraftNintendoSwitch
-        authTitle?: Titles,
+        authTitle?: String,
         // Profiles folder to store cached profiles, default is .minecraft
         profilesFolder?: string,
         // Called when microsoft authorization is needed when not provided it will the information log to the console instead

@@ -34,8 +34,7 @@ async function connect(client) {
     })
 
     client.once('close', () => {
-        if (client.options.transport != "NETHERNET") return
-        if (client.nethernet.session) client.nethernet.session.end()
+        if (client.options.transport.includes("NETHERNET")) return
         if (client.nethernet.signalling) client.nethernet.signalling.destroy()
     })
 }

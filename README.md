@@ -9,5 +9,4 @@ Parts of NETHERNET Support is based off of Atomic Protocol (Original Repository 
 Let me know of any issues you find.
 
 ## Todo
-- Relay Support
 - Make version in [./src/transforms/serializer.js](https://github.com/thejfkvis/BedrockX/blob/c5621bcdbcce12ba6a7c7c1a7a4342412d58f262/src/transforms/serializer.js#L6) dynamic sometime soon

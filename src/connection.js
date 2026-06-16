@@ -49,7 +49,9 @@ class Connection extends EventEmitter {
 
     try {
       this.batch.addEncodedPacket(buffer)
-    } catch (error) { }
+    } catch (error) {
+      console.log(error)
+    }
 
     this.encryptionEnabled ? this.sendEncryptedBatch(this.batch) : this.sendDecryptedBatch(this.batch)
   }
@@ -64,10 +66,11 @@ class Connection extends EventEmitter {
   }
 
   sendMCPE(buffer, immediate) {
-    try {
-      this.connection.sendReliable(buffer, immediate)
-      this.batch.flush();
-    } catch {}
+      try {
+        this.connection.sendReliable(buffer, immediate)
+      } finally {
+        this.batch.flush()
+      }
   }
 
   // These are callbacks called from encryption.js

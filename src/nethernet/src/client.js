@@ -99,14 +99,17 @@ class Client extends EventEmitter {
     }
 
     this.rtcConnection.onconnectionstatechange = () => {
-      switch (this.rtcConnection?.connectionState) {
+      const state = this.rtcConnection?.connectionState
+      
+      switch (state) {
         case "connected":
           this.emit('connected', this.connection)
           break;
         case "closed":
         case "disconnected":
         case "failed":
-          this.emit('disconnect', this.connectionId, 'disconnected')
+          this.emit('disconnect', this.connectionId, state)
+          break;
       }
     }
 

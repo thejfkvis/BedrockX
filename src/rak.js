@@ -1,5 +1,5 @@
 const { EventEmitter } = require('events')
-const { Client, PacketPriority, PacketReliability } = require('./raknet/index');
+const { Client, Server, PacketPriority, PacketReliability } = require('./raknet/index');
 
 class RakClient extends EventEmitter {
   constructor(options) {
@@ -40,4 +40,49 @@ class RakClient extends EventEmitter {
   }
 }
 
-module.exports = { RakClient }
+class RakServer extends EventEmitter {
+  constructor (options = {}, server) {
+    super()
+    this.onOpenConnection = () => { }
+    this.onCloseConnection = () => { }
+    this.onEncapsulated = () => { }
+    this.raknet = new Server(options.host, options.port, {
+      maxConnections: 2,
+      protocolVersion: 11,
+      message: server.getAdvertisement().toBuffer()
+    })
+    this.onClose = () => {}
+
+    this.updateAdvertisement = () => {
+      this.raknet.setOfflineMessage(server.getAdvertisement().toBuffer())
+    }
+
+    this.raknet.on('openConnection', (client) => {
+      client.sendReliable = function (buffer) {
+        return this.send(buffer, PacketPriority.IMMEDIATE_PRIORITY, PacketReliability.RELIABLE_ORDERED, 0)
+      }
+
+      this.onOpenConnection(client)
+    })
+
+    this.raknet.on('closeConnection', (client, id) => {
+      this.onCloseConnection(client, id)
+    })
+
+    this.raknet.on('encapsulated', ({ buffer, address }) => {
+      this.onEncapsulated(buffer, address)
+    })
+
+    this.raknet.on('close', (reason) => this.onClose(reason))
+  }
+
+  listen () {
+    this.raknet.listen()
+  }
+
+  close () {
+    this.raknet.close()
+  }
+}
+
+module.exports = { RakClient, RakServer }

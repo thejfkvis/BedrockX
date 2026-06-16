@@ -3,6 +3,8 @@ const { createDeserializer, createSerializer } = require('./transforms/serialize
 const { NethernetClient } = require('./nethernet')
 const { RakClient } = require('./rak')
 const { authenticate } = require('./client/auth')
+const { NethernetSignal } = require('./websocket/signal')
+const { NethernetJSONRPC } = require('./websocket/signal-jsonrpc')
 
 const JWT = require('jsonwebtoken')
 const crypto = require('crypto')
@@ -61,7 +63,23 @@ class Client extends Connection {
 
     connect() {
         if (!this.connection) throw new Error('Connect not currently allowed')
-        this.on('session', this._connect)
+            
+        this.on('session', async () => {
+            if (this.options.transport.includes("NETHERNET")) {
+                this.nethernet.signalling = this.options.transport === "NETHERNET_JSONRPC" ? new NethernetJSONRPC(this.connection.nethernet.networkId, this.options.authflow, this.options.version, this.options.networkId) : new NethernetSignal(this.connection.nethernet.networkId, this.options.authflow, this.options.version, this.options.networkId)
+
+                this.nethernet.signalling.connect()
+
+                this.connection.nethernet.signalHandler = this.nethernet.signalling.write.bind(this.nethernet.signalling)
+
+                this.nethernet.signalling.on('signal', signal => this.connection.nethernet.handleSignal(signal))
+                this.nethernet.signalling.on('credentials', (credentials) => {
+                    this.nethernet.credentials = this.nethernet.signalling.credentials
+                    this._connect()
+                })
+            }
+        })
+
         authenticate(this, this.options)
     }
 
@@ -75,8 +93,8 @@ class Client extends Connection {
             this.write('request_network_settings', { client_protocol: this.options.protocolVersion })
         }
 
-        this.connection.onCloseConnection = () => {
-            this.close()
+        this.connection.onCloseConnection = (reason) => {
+            this.close(reason)
         }
 
         this.connection.onEncapsulated = this.onEncapsulated
@@ -110,7 +128,7 @@ class Client extends Connection {
 
         const PlayFabId = this.tokenData.mid.toLowerCase() || "";
 
-        const updPFID = (data) => btoa(atob(data).replaceAll(`aed7e8a4d485a49a-5`, `${PlayFabId}-5`));    
+        const updPFID = (data) => btoa(atob(data).replaceAll(`aed7e8a4d485a49a-5`, `${PlayFabId}-5`));
         payload.SkinId = `persona-${PlayFabId || ""}-5`;
         payload.SkinGeometryData = updPFID(payload.SkinGeometryData);
         payload.SkinResourcePatch = updPFID(payload.SkinResourcePatch);
@@ -130,12 +148,15 @@ class Client extends Connection {
         this.close(reason)
     }
 
-    close() {
-        if (this.status !== ClientStatus.Disconnected) this.emit('close') // Emit close once
+    close(reason) {
+        if (this.status !== ClientStatus.Disconnected) this.emit('close', reason) // Emit close once
         this.batch = null;
         this.connection?.close()
         this.removeAllListeners()
         this.status = ClientStatus.Disconnected
+        if (!this.options.transport.includes("NETHERNET")) return
+        if (this.nethernet.signalling) this.nethernet.signalling.destroy()
+        this.nethernet = null
     }
 
     readPacket(packet) {

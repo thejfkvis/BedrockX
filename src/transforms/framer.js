@@ -14,7 +14,7 @@ class Framer {
     this.compressionLevel = client.compressionLevel
     this.compressionThreshold = client.compressionThreshold
     this.compressionHeader = client.compressionHeader || 0
-    this.writeCompressor = client.compressionReady
+    this.writeCompressor = Boolean(client.features?.compressorInHeader && client.compressionReady)
   }
 
   // No compression in base class

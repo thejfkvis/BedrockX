@@ -16,7 +16,7 @@ class NethernetClient {
       this.connected = true
     });
 
-    this.nethernet.on('disconnect', (reason) => {
+    this.nethernet.on('disconnect', (_id, reason) => {
       this.onCloseConnection(reason)
       this.connected = false
     });

@@ -6,7 +6,4 @@ There is a example provided. You can read the source code to learn how it works.
 
 Parts of NETHERNET Support is based off of Atomic Protocol (Original Repository now deleted) by [Serial-V](https://github.com/Serial-V)
 
-Let me know of any issues you find.
-
-## Todo
-- Make version in [./src/transforms/serializer.js](https://github.com/thejfkvis/BedrockX/blob/c5621bcdbcce12ba6a7c7c1a7a4342412d58f262/src/transforms/serializer.js#L6) dynamic sometime soon
+Let me know of any issues you find

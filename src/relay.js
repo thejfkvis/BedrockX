@@ -7,22 +7,20 @@ class RelayPlayer extends Player {
         super(server, conn)
 
         this.startRelaying = false
-        this.once('join', () => { // The client has joined our proxy
+        this.once('join', () => {
             this.startRelaying = true
+            this.flushChunks();
         })
 
-        this.upInLog = (...msg) => { }
-        this.upOutLog = (...msg) => { }
-        this.downInLog = (...msg) => { }
-        this.downOutLog = (...msg) => { }
+        this.upInLog = this.upOutLog = this.downInLog = this.downOutLog = (...msg) => { }
 
-        this.outLog = this.downOutLog
-        this.inLog = this.downInLog
         this.chunkSendCache = []
         this.sentStartGame = false
-
         this.pendingUpstreamPackets = []
         this.player_unique_id = -1;
+
+        this.serializer = this.server.serializer;
+        this.deserializer = this.server.deserializer;
     }
 
     forwardToUpstream(data, packet, modified) {
@@ -35,29 +33,31 @@ class RelayPlayer extends Player {
                 break;
         }
 
-        modified || !packet ? this.upstream.write(data.name, data.params) : this.upstream.sendBuffer(packet)
+        !modified && packet ? this.upstream.sendBuffer(packet) : this.upstream.write(data.name, data.params)
     }
 
-    // Called when we get a packet from backend server (Backend -> PROXY -> Client)
+    flushChunks() {
+        if (this.chunkSendCache.length === 0) return;
+        while (this.chunkSendCache.length > 0) {
+            this.sendBuffer(this.chunkSendCache.shift());
+        }
+    }
+
     readUpstream(packet) {
+        const packetId = packet[0];
+        if (packetId === 0x1f) return;
+
         let des
         try {
-            des = this.server.deserializer.parsePacketBuffer(packet)
+            des = this.deserializer.parsePacketBuffer(packet)
         } catch (e) {
-            console.log('Upstream parse failed for', this.connection.address, '— forwarding raw buffer. id=0x' + packet[0]?.toString(16), e?.message)
-
-            try {
-                this.sendBuffer(packet)
-            } catch (sendErr) {
-                console.log('Failed to forward raw upstream packet:', sendErr?.message)
-            }
+            this.sendBuffer(packet)
             return
         }
 
-        const name = des.data.name
-        const params = des.data.params
+        const { name, params } = des.data
 
-        if (name === 'play_status' && params.status === 'login_success') return // Already sent this, this needs to be sent ASAP or client will disconnect
+        if (name === 'play_status' && params.status === 'login_success') return
 
         this.emit('clientbound', des.data, des)
 
@@ -66,76 +66,64 @@ class RelayPlayer extends Player {
                 case 'start_game':
                     this.player_unique_id = params.entity_id;
                     this.sentStartGame = true
+                    this.flushChunks();
                     break
                 case 'level_chunk':
-                    this.chunkSendCache.push(packet)
+                    this.chunkSendCache.push(packet);
                     return
                 case 'item_registry':
-                    params.itemstates?.forEach(state => {
-                        if (state.name === 'minecraft:shield') {
-                            this.server.serializer.proto.setVariable('ShieldItemID', state.runtime_id)
-                            this.server.deserializer.proto.setVariable('ShieldItemID', state.runtime_id)
+                    const states = params.itemstates;
+                    if (states) {
+                        for (let i = 0; i < states.length; i++) {
+                            if (states[i].name === 'minecraft:shield') {
+                                const rid = states[i].runtime_id;
+                                this.serializer.proto.setVariable('ShieldItemID', rid);
+                                this.deserializer.proto.setVariable('ShieldItemID', rid);
+                                break;
+                            }
                         }
-                    })
+                    }
                     break;
                 case 'update_player_game_type':
-                    if (this.player_unique_id) {
-                        if (params.player_unique_id != this.player_unique_id) break;
-
-                        this.write("set_player_game_type", {
-                            gamemode: params.gamemode
-                        })
+                    if (this.player_unique_id === params.player_unique_id) {
+                        this.write("set_player_game_type", { gamemode: params.gamemode });
                     }
                     break
             }
 
             des.modified ? this.write(name, params) : this.sendBuffer(packet)
         }
-
-        const chunkLen = this.chunkSendCache.length
-        if (chunkLen > 0 && this.sentStartGame) {
-            for (let i = 0; i < chunkLen; i++) this.sendBuffer(this.chunkSendCache[i]);
-
-            this.chunkSendCache = [];
-        }
     }
-
-    // Called when the server gets a packet from the downstream player (Client -> PROXY -> Backend)
+    
     readPacket(packet) {
-        if (this.startRelaying) {
-            let des
-            try {
-                des = this.server.deserializer.parsePacketBuffer(packet)
-            } catch (e) {
-                console.log('Downstream parse failed for', this.connection.address, '— forwarding raw buffer. id=0x' + packet[0]?.toString(16), e?.message)
-
-                if (this.upstream) {
-                    try {
-                        this.upstream.sendBuffer(packet)
-                    } catch (sendErr) {
-                        console.log('Failed to forward raw downstream packet:', sendErr?.message)
-                    }
-                }
-                return
-            }
-
-            this.emit('serverbound', des.data, des)
-            if (des.canceled) return
-
-            if (!this.upstream) {
-                this.pendingUpstreamPackets.push({ data: des.data, packet, modified: des.modified })
-                return
-            }
-
-            this.forwardToUpstream(des.data, packet, des.modified)
-        } else {
-            super.readPacket(packet)
+        if (!this.startRelaying) {
+            super.readPacket(packet);
+            return;
         }
+
+        let des
+        try {
+            des = this.deserializer.parsePacketBuffer(packet)
+        } catch (e) {
+            if (this.upstream) this.upstream.sendBuffer(packet)
+            return;
+        }
+
+        this.emit('serverbound', des.data, des)
+        if (des.canceled) return
+
+        if (!this.upstream) {
+            this.pendingUpstreamPackets.push({ data: des.data, packet, modified: des.modified })
+            return
+        }
+
+        this.forwardToUpstream(des.data, packet, des.modified)
     }
 
     close(reason) {
         super.close(reason)
         this.upstream?.close(reason)
+        this.chunkSendCache = []
     }
 }
 
@@ -175,7 +163,11 @@ class Relay extends Server {
             },
             profilesFolder: this.options.profilesFolder,
             autoInitPlayer: false,
-            delayedInit: true
+            delayedInit: true,
+            skinData: {
+                ...ds.skinData,
+                ...this.options.skinData
+            }
         }
 
         const client = new Client(options)

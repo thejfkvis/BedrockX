@@ -45,12 +45,12 @@ class RelayPlayer extends Player {
 
     readUpstream(packet) {
         const packetId = packet[0];
-        if (packetId === 0x1f) return;
 
         let des
         try {
             des = this.deserializer.parsePacketBuffer(packet)
         } catch (e) {
+            if (packetId === 0x1f) return;
             this.sendBuffer(packet)
             return
         }

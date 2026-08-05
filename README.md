@@ -59,9 +59,6 @@ the client can be used without the original application tree.
 - `src/raknet`: default transport and platform native modules
 - `src/ext`: required protocol metadata
 
-This is a protocol package only. It does not include database, scraping,
-Discord, website, bot, or server-management code.
-
 ## Validation
 
 ```sh

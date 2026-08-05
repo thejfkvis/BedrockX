@@ -5,9 +5,16 @@ class NethernetClient {
     this.connected = false
     this.onConnected = () => {}
     this.onCloseConnection = () => {}
+    this.onConnectError = () => {}
     this.onEncapsulated = () => {}
+    this.onDiagnostic = () => {}
 
-    this.nethernet = new Client(options.networkId, "255.255.255.255", options.token)
+    this.nethernet = new Client(
+      options.networkId,
+      "255.255.255.255",
+      options.token,
+      options.identityPrivateKeyPEM
+    )
 
     this.nethernet.on('connected', (client) => {
       if (this.connected) return
@@ -21,8 +28,17 @@ class NethernetClient {
       this.connected = false
     });
 
+    this.nethernet.on('connect_error', (metadata) => {
+      this.onConnectError(metadata)
+      this.connected = false
+    });
+
     this.nethernet.on('encapsulated', (buffer) => {
       this.onEncapsulated({ buffer })
+    });
+
+    this.nethernet.on('diagnostic', (diagnostic) => {
+      this.onDiagnostic(diagnostic)
     });
   }
 

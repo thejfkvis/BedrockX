@@ -19,19 +19,46 @@ class Connection {
     this.promisedSegments = 0
     this.buf = Buffer.allocUnsafe(0)
     this.sendQueue = []
+    this.reliableOpened = false
   }
 
   setChannels(reliable, unreliable) {
     if (reliable) {
       this.reliable = reliable
       this.reliable.binaryType = 'arraybuffer'
+      this.nethernet.emit('diagnostic', { phase: 'rtc', message: `Data channel ReliableDataChannel readyState=${this.reliable.readyState || 'unknown'}.` })
       this.reliable.onmessage = (event) => this.handleMessage(event.data)
-      this.reliable.onopen = () => this.flushQueue()
+      this.reliable.onopen = () => {
+        this.nethernet.emit('diagnostic', { phase: 'rtc', message: `Data channel ReliableDataChannel open; readyState=${this.reliable.readyState || 'unknown'}.` })
+        this.flushQueue()
+        if (!this.reliableOpened) {
+          this.reliableOpened = true
+          this.nethernet.emit('connected', this)
+        }
+      }
+      this.reliable.onclose = () => {
+        this.nethernet.emit('diagnostic', { phase: 'rtc', message: `Data channel ReliableDataChannel close; readyState=${this.reliable.readyState || 'unknown'}.` })
+      }
+      this.reliable.onerror = (event) => {
+        const reason = (typeof event?.error?.message === 'string' ? event.error.message : typeof event?.message === 'string' ? event.message : '').slice(0, 160)
+        this.nethernet.emit('diagnostic', { phase: 'rtc', level: 'error', message: `Data channel ReliableDataChannel error; readyState=${this.reliable.readyState || 'unknown'}${reason ? `: ${reason}` : '.'}` })
+      }
     }
 
     if (unreliable) {
       this.unreliable = unreliable
       this.unreliable.binaryType = 'arraybuffer'
+      this.nethernet.emit('diagnostic', { phase: 'rtc', message: `Data channel UnreliableDataChannel readyState=${this.unreliable.readyState || 'unknown'}.` })
+      this.unreliable.onopen = () => {
+        this.nethernet.emit('diagnostic', { phase: 'rtc', message: `Data channel UnreliableDataChannel open; readyState=${this.unreliable.readyState || 'unknown'}.` })
+      }
+      this.unreliable.onclose = () => {
+        this.nethernet.emit('diagnostic', { phase: 'rtc', message: `Data channel UnreliableDataChannel close; readyState=${this.unreliable.readyState || 'unknown'}.` })
+      }
+      this.unreliable.onerror = (event) => {
+        const reason = (typeof event?.error?.message === 'string' ? event.error.message : typeof event?.message === 'string' ? event.message : '').slice(0, 160)
+        this.nethernet.emit('diagnostic', { phase: 'rtc', level: 'error', message: `Data channel UnreliableDataChannel error; readyState=${this.unreliable.readyState || 'unknown'}${reason ? `: ${reason}` : '.'}` })
+      }
     }
   }
 

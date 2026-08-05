@@ -44,7 +44,12 @@ class Framer {
     let decompressed
 
     if (client.compressionReady) {
-      decompressed = this.decompress(buffer[0], buffer.slice(1))
+      try {
+        decompressed = this.decompress(buffer[0], buffer.slice(1))
+      } catch (e) {
+        console.error("Zlib decompression failed for packet:", e.message);
+        return []
+      }
     } else {
       try {
         decompressed = this.decompress(client.compressionAlgorithm, buffer)

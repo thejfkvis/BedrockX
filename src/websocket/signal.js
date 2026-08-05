@@ -3,6 +3,7 @@ const { WebSocket } = require('ws')
 const { SignalStructure } = require('../nethernet/index')
 const { v4 } = require("uuid")
 const JSONBigInt = require('json-bigint')({ useNativeBigInt: true })
+const { decodeTokenMetadata } = require('../identity')
 
 const MessageType = {
     RequestPing: 0,
@@ -30,6 +31,8 @@ class NethernetSignal extends EventEmitter {
     async connect() {
         if (this.ws?.readyState === WebSocket.OPEN) throw new Error('Already connected signaling server');
         this.destroyed = false
+
+        this.emit("diagnostic", { phase: "signaling", message: "Opening NetherNet signaling channel." })
 
         await this.init()
         await Promise.race([
@@ -90,11 +93,20 @@ class NethernetSignal extends EventEmitter {
 
     async init() {
         const xbl = await this.authflow.getMinecraftBedrockServicesToken({ version: this.version })
+        const tokenMetadata = decodeTokenMetadata(xbl?.mcToken)
+        const authDiagnostics = this.authflow.getIdentityDiagnostics?.() || {}
+        this.emit("diagnostic", {
+            phase: "identity",
+            message: `NetherNet signaling authentication: authorization=${tokenMetadata.present ? 'present' : 'missing'} source=${authDiagnostics.minecraftServices?.source || 'unknown'} expiry=${tokenMetadata.expiry} audience=${tokenMetadata.audience} xuid=${authDiagnostics.minecraftServices?.xuid || 'unknown'} relying_party=${authDiagnostics.minecraftServices?.relyingParty || 'unknown'}.`
+        })
         const address = `wss://signal.franchise.minecraft-services.net/ws/v1.0/signaling/${this.networkId}`
+        this.emit("diagnostic", { phase: "identity", message: "NetherNet signaling WebSocket auth fields: authorization=present session-id=present request-id=present." })
 
         const ws = new WebSocket(address, { headers: { Authorization: xbl.mcToken, "session-id": this.networkId, "request-id": v4() } })
         this.ws = ws
         this.lastLiveness = Date.now()
+
+        this.emit("diagnostic", { phase: "signaling", message: "Signaling WebSocket created." })
 
         ws.on("open", () => this.onOpen())
         ws.on("close", (code, reason) => this.onClose(code, reason.toString()))
@@ -119,11 +131,15 @@ class NethernetSignal extends EventEmitter {
     onOpen() {
         this.retryCount = 0
         this.lastLiveness = Date.now()
+        this.emit("diagnostic", { phase: "signaling", message: "Signaling WebSocket opened." })
     }
 
-    onError(err) { }
+    onError(err) {
+        this.emit("diagnostic", { phase: "signaling", level: "error", message: `Signaling WebSocket error: ${err?.message || String(err)}` })
+    }
 
     async onClose(code, reason) {
+        this.emit("diagnostic", { phase: "signaling", level: "warn", message: `Signaling WebSocket closed (${code}${reason ? `: ${reason}` : ""}).` })
         if (this.ws === null && this.pingInterval) {
             clearInterval(this.pingInterval)
             this.pingInterval = null
@@ -138,6 +154,7 @@ class NethernetSignal extends EventEmitter {
 
         if (retryable && this.retryCount < MAX_RETRIES) {
             this.retryCount++
+            this.emit("diagnostic", { phase: "signaling", level: "warn", message: `Retrying signaling connection (${this.retryCount}/${MAX_RETRIES}).` })
             await this.destroy(true)
         } else {
             await this.destroy(false)
@@ -166,6 +183,7 @@ class NethernetSignal extends EventEmitter {
             case MessageType.Credentials:
                 if (message.From !== "Server") return
                 this.credentials = parseTurnServers(message.Message)
+                this.emit("diagnostic", { phase: "signaling", message: `Received NetherNet relay credentials (${this.credentials.length} ICE server entries).` })
                 this.emit("credentials", this.credentials)
                 break
             case MessageType.Signal:
@@ -185,6 +203,10 @@ class NethernetSignal extends EventEmitter {
         if (!this.ws) throw new Error('WebSocket not connected')
 
         const message = JSONBigInt.stringify({ Type: MessageType.Signal, To: signal.serverNetworkId, Message: signal.toString() })
+
+        if (signal.type === 'CONNECTREQUEST') {
+            this.emit('diagnostic', { phase: 'signaling', message: 'Signaling_WebRtc_v1_0 offer fields: netherNetId=present toPlayerId=present signal=CONNECTREQUEST message=present.' })
+        }
         
         this.ws.send(message)
     }

@@ -3,6 +3,16 @@ const { Framer } = require('./transforms/framer')
 
 const cipher = require('./transforms/encryption')
 
+const DIAGNOSTIC_PACKET_NAMES = new Set([
+  'request_network_settings',
+  'login',
+  'client_to_server_handshake',
+  'resource_pack_client_response',
+  'request_chunk_radius',
+  'serverbound_loading_screen',
+  'set_local_player_as_initialized'
+])
+
 const ClientStatus = {
   Disconnected: 0,
   Connecting: 1,
@@ -15,6 +25,7 @@ class Connection extends EventEmitter {
   #status = ClientStatus.Disconnected
   sendQ = []
   batch = new Framer(this)
+  firstOutboundPacketName = null
 
   get status() {
     return this.#status
@@ -37,6 +48,12 @@ class Connection extends EventEmitter {
 
     try {
       this.batch.addEncodedPacket(this.serializer.createPacketBuffer({ name, params }))
+      if (!this.firstOutboundPacketName) {
+        this.firstOutboundPacketName = name
+        this.emit('packet_sent', { name, first: true })
+      } else if (DIAGNOSTIC_PACKET_NAMES.has(name)) {
+        this.emit('packet_sent', { name })
+      }
     } catch (error) {
       console.log(error)
     }

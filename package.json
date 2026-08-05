@@ -1,5 +1,5 @@
 {
-  "name": "bedrockx-1.26.40",
+  "name": "bedrockx",
   "version": "1.26.40-2168",
   "description": "Standalone BedrockX protocol client for Minecraft Bedrock 1.26.40 build 2168.",
   "main": "index.js",

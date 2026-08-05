@@ -35,7 +35,12 @@ async function authenticate(client, options) {
 
     const clienttoken = JWT.sign(clientpayload, client.privateKeyPEM, { algorithm: 'ES384', noTimestamp: true, header: { x5u: xboxProfile.identityPublicKey, alg: 'ES384', typ: undefined } })
 
-    client.profile = xboxProfile?.extraData
+    client.profile = xboxProfile?.extraData || {}
+
+    if (!client.profile.identity) {
+      throw new Error('Bedrock authentication chain is missing extraData.identity')
+    }
+
     client.profile.uuid = translateUUID(client.profile.identity)
     client.chain = chains
     client.clienttoken = clienttoken

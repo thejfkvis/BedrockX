@@ -2,7 +2,7 @@ const { ProtoDefCompiler } = require('protodef').Compiler
 const { FullPacketParser, Serializer } = require('protodef')
 
 // Compiles the ProtoDef schema at runtime
-const protocol = require("../../ext/protocol.json")
+const protocol = require("../protocol/protocol.json")
 const compiler = new ProtoDefCompiler()
 
 const packetNamesByHeader = protocol.types.mcpe_packet[1][0].type[1].mappings

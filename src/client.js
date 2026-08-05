@@ -35,7 +35,13 @@ class Client extends Connection {
 
     constructor(options) {
         super()
-        this.options = { ...options }
+        // `protocol` was the original public option name; `transport` is used
+        // internally by the current client. Normalize both at the package edge
+        // so existing callers continue to work without changing the protocol.
+        this.options = {
+            ...options,
+            transport: options.transport ?? options.protocol ?? 'DEFAULT'
+        }
         this.closing = false
         this.on('status', (status) => {
             const label = PROTOCOL_STATUS_NAMES[Number(status)] || `unknown(${String(status)})`

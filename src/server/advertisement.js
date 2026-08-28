@@ -121,7 +121,7 @@ class ServerAdvertisement {
 
   constructor(obj, port, version = "1.26.44") {
     if (obj?.name) obj.motd = obj.name
-    this.protocol = 2168
+    this.protocol = 2169
     this.version = version
     this.portV4 = port
     this.portV6 = port

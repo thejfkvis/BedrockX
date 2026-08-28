@@ -10,7 +10,7 @@ class RealmAPI extends XboxAPI {
             "client-ref": "040cca85d792e94e6fe087503108295846d4933d",
             "client-version": "1.26.44",
             "x-clientplatform": "iOS",
-            "x-networkprotocolversion": "2168",
+            "x-networkprotocolversion": "2169",
             "content-type": "application/json",
             "user-agent": "MCPE/IOS",
             "Accept-Language": "en-US",

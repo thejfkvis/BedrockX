@@ -119,7 +119,7 @@ class ServerAdvertisement {
   portV4 = undefined
   portV6 = undefined
 
-  constructor(obj, port, version = "1.26.44") {
+  constructor(obj, port, version = "1.26.45") {
     if (obj?.name) obj.motd = obj.name
     this.protocol = 2169
     this.version = version

@@ -45,7 +45,7 @@ class Client extends Connection {
         switch (this.options.transport) {
             case "NETHERNET":
             case "NETHERNET_JSONRPC":
-                this.connection = new NethernetClient({ networkId: this.options.networkId, token: this.token })
+                this.connection = new NethernetClient({ networkId: this.options.networkId, token: this.token, ecdhKeyPair: this.ecdhKeyPair })
 
                 this.batchHeader = null
                 this.disableEncryption = true

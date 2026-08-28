@@ -50,7 +50,6 @@ class RelayPlayer extends Player {
         try {
             des = this.deserializer.parsePacketBuffer(packet)
         } catch (e) {
-            if (packetId === 0x1f) return;
             this.sendBuffer(packet)
             return
         }
@@ -145,6 +144,7 @@ class Relay extends Server {
     }
 
     async openUpstreamConnection(ds, clientAddr) {
+        console.log(ds.skinData)
         const options = {
             authTitle: this.options.authTitle,
             flow: this.options.flow,

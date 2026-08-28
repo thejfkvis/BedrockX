@@ -14,7 +14,6 @@ async function createRelay(realm) {
         authTitle: Titles.MinecraftIOS,
         deviceType: "iOS",
         flow: "sisu",
-        version: "1.26.30",
         authflow: new Authflow(undefined, "./auth", {
             flow: "sisu",
             authTitle: Titles.MinecraftIOS,
@@ -23,7 +22,7 @@ async function createRelay(realm) {
             console.log(`${data.message}`);
         }),
         omitParseErrors: false,
-        protocolVersion: 1001,
+        protocolVersion: 2168,
         compressionAlgorithm: "deflate",
         compressionLevel: 7,
         compressionThreshold: 512,

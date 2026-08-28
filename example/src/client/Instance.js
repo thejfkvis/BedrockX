@@ -13,8 +13,8 @@ async function createInstance(realm, RAPI) {
         authTitle: Titles.MinecraftIOS,
         deviceType: "iOS",
         flow: "sisu",
-        version: "1.26.30",
-        protocolVersion: 1001,
+
+        protocolVersion: 2168,
         authflow: new Authflow(undefined, "./auth", {
             flow: "sisu",
             authTitle: Titles.MinecraftIOS,
@@ -37,7 +37,7 @@ async function createInstance(realm, RAPI) {
 
     const updatePresence = async () => {
         await RAPI.sendPresence({})
-        await RAPI.sendInGamePresence(realm, true)
+        // await RAPI.sendInGamePresence(realm, true)
     }
 
     interval = setInterval(updatePresence, 60000);
@@ -57,6 +57,8 @@ async function createInstance(realm, RAPI) {
     });
 
     instance.on("error", (error) => {
+        console.log(error)
+
         if (wasKicked) return;
 
         instance.emit("kick", { message: String(error) });

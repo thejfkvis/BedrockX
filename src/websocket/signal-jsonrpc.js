@@ -14,16 +14,12 @@ class NethernetJSONRPC extends EventEmitter {
         this.authflow = authflow
         this.version = version
         this.ws = null
-        this.credentials = []
-        this.candidates = []
-        this.signalCandidates = []
 
         this.pingInterval = null
         this.retryCount = 0
         this.destroyed = false
         this.lastLiveness = 0
         this.connectionId = null
-        this.didSendCandidates = false
     }
 
     async connect() {
@@ -111,7 +107,7 @@ class NethernetJSONRPC extends EventEmitter {
                             this.ws.terminate?.()
                         } catch { }
                     }
-                }, 2000)
+                }, 60000)
             }
         } catch (error) {
             this.emit("error", error)
@@ -174,8 +170,8 @@ class NethernetJSONRPC extends EventEmitter {
         }
 
         if (Array.isArray(message.result?.TurnAuthServers)) {
-            this.credentials = parseTurnServers(JSON.stringify(message.result))
-            this.emit("credentials", this.credentials)
+            this.emit("credentials", [])
+            return
         }
 
         switch (message.method) {
@@ -184,9 +180,11 @@ class NethernetJSONRPC extends EventEmitter {
                 break
             case "Signaling_ReceiveMessage_v1_0":
                 this.ws.send(JSON.stringify({ id: message.id, result: null, jsonrpc: "2.0" }))
-                const params = Array.isArray(message.params)? message.params : message.params ? [message.params]: []
+                const params = Array.isArray(message.params) ? message.params : message.params ? [message.params] : []
+
                 for (const param of params) {
                     this.sendDeliveryNotification(param.From, param.Id)
+
                     let signalMessage = param.Message
                     try {
                         const parsed = JSON.parse(param.Message)
@@ -209,31 +207,6 @@ class NethernetJSONRPC extends EventEmitter {
                     signal.networkId = this.networkId
                     signal.serverNetworkId = param.From ?? this.serverNetworkId
 
-                    if (signal.type === "CANDIDATEADD") {
-                        signal.data += " network-cost 10";
-
-                        if (!this.didSendCandidates) {
-                            this.signalCandidates.push(signal);
-                            return
-                        }
-                    }
-
-                    if (
-                        signal.type === "CONNECTRESPONSE" &&
-                        signal.connectionId === this.connectionId &&
-                        !this.didSendCandidates
-                    ) {
-                        for (const candidate of this.candidates) {
-                            this.write(candidate)
-                        }
-
-                        for (const signalCandidate of this.signalCandidates) {
-                            this.emit("signal", signalCandidate)
-                        }
-
-                        this.didSendCandidates = true
-                    }
-
                     this.emit("signal", signal)
                 }
                 break
@@ -246,16 +219,6 @@ class NethernetJSONRPC extends EventEmitter {
         if (!this.ws) throw new Error('WebSocket not connected')
 
         let uuidv4 = v4()
-
-        if (signal.type === "CANDIDATEADD" && !this.candidates.includes(signal)) {
-            this.candidates.length === 0 ? signal.data += " network-cost 50" : signal.data += " network-cost 10"
-
-            if (signal.data.includes("tcp") || signal.data.includes("::1") || signal.data.includes("127.0.0.1")) return;
-
-            this.candidates.push(signal)
-            // Don't write yet, just store for later, and then we will write them after connectrequest
-            return
-        }
 
         if (signal.type === "CONNECTREQUEST") this.connectionId = signal.connectionId
 
@@ -306,66 +269,3 @@ class NethernetJSONRPC extends EventEmitter {
 }
 
 module.exports = { NethernetJSONRPC }
-
-function parseTurnServers(dataString) {
-    const iceServers = []
-    const TurnAuthServers = JSON.parse(dataString)?.TurnAuthServers ?? []
-
-    for (const server of TurnAuthServers) {
-        const urls = server?.Urls ?? []
-        const username = typeof server?.Username === "string" ? server.Username : undefined
-        const credential = typeof server?.Password === "string" ? server.Password : (typeof server?.Credential === "string" ? server.Credential : undefined)
-
-        for (const rawUrl of urls) {
-            const parsedUrl = parseIceUrl(rawUrl)
-            if (!parsedUrl) continue
-
-            const urlCandidates = new Set([formatIceUrl(parsedUrl)])
-
-            if (parsedUrl.isTurn) {
-                if (parsedUrl.transport !== "tcp") urlCandidates.add(formatIceUrl({ ...parsedUrl, transport: "udp" }))
-                if (parsedUrl.scheme !== "turns") urlCandidates.add(formatIceUrl({ ...parsedUrl, scheme: "turns", port: 5349, transport: "udp" }))
-            }
-
-            for (const url of urlCandidates) {
-                parsedUrl.isTurn ? iceServers.push({ urls: url, username, credential }) : iceServers.push({ urls: url })
-            }
-        }
-    }
-
-    return iceServers
-}
-
-function parseIceUrl(url) {
-    const match = url.trim().match(/^(?<scheme>stuns?|turns?)(?::\/\/|:)?(?<host>[^:?\s]+)(?::(?<port>\d+))?(?:\?(?<query>.*))?$/i)
-    if (!match || !match.groups) return null
-
-    const scheme = match.groups.scheme.toLowerCase()
-    const hostname = match.groups.host
-    const port = match.groups.port ? parseInt(match.groups.port, 10) : defaultPortForScheme(scheme)
-
-    if (!hostname || Number.isNaN(port)) return null
-
-    const isTurn = scheme.startsWith("turn")
-
-    let transport
-    if (scheme === "turns") transport = "tcp"
-
-    if (isTurn) transport = match.groups.query?.split("&").find(param => param.startsWith("transport="))?.split("=")[1] ?? "udp"
-    if (!transport) transport = "udp"
-
-    return { scheme, hostname, port, transport, isTurn }
-}
-
-function formatIceUrl(parsed) {
-    const protocol = parsed.scheme
-    const base = `${protocol}:${parsed.hostname}:${parsed.port}`
-
-    if (!parsed.isTurn) return base
-
-    return `${base}?transport=${parsed.transport ?? "udp"}`
-}
-
-function defaultPortForScheme(scheme) {
-    return scheme === "stuns" ? 3478 : 5349
-}

@@ -12,12 +12,13 @@ const PORT = 7551
 const BROADCAST_ADDRESS = '255.255.255.255'
 
 class Client extends EventEmitter {
-  constructor(networkId, broadcastAddress = BROADCAST_ADDRESS, token) {
+  constructor(networkId, broadcastAddress = BROADCAST_ADDRESS, token, ecdhKeyPair) {
     super()
 
     this.serverNetworkId = networkId
     this.broadcastAddress = broadcastAddress
     this.token = token
+    this.ecdhKeyPair = ecdhKeyPair
     this.networkId = getRandomUint64()
     this.connectionId = getRandomUint64()
     this.socket = dgram.createSocket('udp4')
@@ -29,7 +30,6 @@ class Client extends EventEmitter {
 
     this.responses = new Map()
     this.addresses = new Map()
-    this.credentials = []
     this.signalHandler = this.sendDiscoveryMessage
 
     this.running = false
@@ -86,14 +86,8 @@ class Client extends EventEmitter {
   }
 
   async createAssertion(fingerprint, token) {
-    const { privateKey: pkcs8Key } = crypto.generateKeyPairSync("ec", { namedCurve: "P-384", privateKeyEncoding: { type: "pkcs8", format: "pem" } });
-
     const payload = JSON.stringify({ fingerprint: [{ algorithm: "sha-256", digest: fingerprint }] });
-
-    const ecPrivateKey = await importPKCS8(pkcs8Key, "ES384");
-    const encoder = new TextEncoder();
-
-    const jws = await new CompactSign(encoder.encode(payload)).setProtectedHeader({ alg: "ES384" }).sign(ecPrivateKey);
+    const jws = await new CompactSign(Buffer.from(payload)).setProtectedHeader({ alg: "ES384" }).sign(this.ecdhKeyPair.privateKey);
 
     const parts = jws.split(".");
     const fingerprints = `${parts[0]}..${parts[2]}`;
@@ -113,7 +107,7 @@ class Client extends EventEmitter {
   }
 
   async createOffer() {
-    this.rtcConnection = new RTCPeerConnection({ iceServers: this.credentials, bundlePolicy: 'max-bundle' })
+    this.rtcConnection = new RTCPeerConnection({ iceServers: [], bundlePolicy: 'max-bundle' })
     this.connection = new Connection(this, this.connectionId, this.rtcConnection)
 
     const reliable = this.rtcConnection.createDataChannel('ReliableDataChannel', { ordered: true })

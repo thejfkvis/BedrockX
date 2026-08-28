@@ -144,7 +144,6 @@ class Relay extends Server {
     }
 
     async openUpstreamConnection(ds, clientAddr) {
-        console.log(ds.skinData)
         const options = {
             authTitle: this.options.authTitle,
             flow: this.options.flow,

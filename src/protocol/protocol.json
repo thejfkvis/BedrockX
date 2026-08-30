@@ -11833,7 +11833,7 @@
                     "type": [
                       "mapper",
                       {
-                        "type": "uint8",
+                        "type": "u8",
                         "mappings": {
                           "0": "remove",
                           "1": "player",

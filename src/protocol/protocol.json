@@ -11833,7 +11833,7 @@
                     "type": [
                       "mapper",
                       {
-                        "type": "varint",
+                        "type": "uint8",
                         "mappings": {
                           "0": "remove",
                           "1": "player",
@@ -11842,10 +11842,6 @@
                         }
                       }
                     ]
-                  },
-                  {
-                    "name": "entry_type_name",
-                    "type": "string"
                   },
                   {
                     "name": "scoreboard_id",

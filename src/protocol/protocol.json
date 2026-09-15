@@ -1354,6 +1354,10 @@
           "type": "zigzag32"
         },
         {
+          "name": "hand",
+          "type": "u8"
+        },
+        {
           "name": "held_item",
           "type": "ItemV4"
         },
@@ -4402,7 +4406,7 @@
           "9": "Dedicated",
           "10": "TVOS",
           "11": "Orbis",
-          "12": "NintendoSwitch",
+          "12": "Nintendo",
           "13": "Xbox",
           "14": "WindowsPhone",
           "15": "Linux"
@@ -4655,6 +4659,17 @@
                 }
               }
             ]
+          ]
+        },
+        {
+          "name": "apply_inherited_starting_rotation",
+          "type": "bool"
+        },
+        {
+          "name": "starting_rotation",
+          "type": [
+            "option",
+            "vec2f"
           ]
         }
       ]
@@ -5323,7 +5338,9 @@
           "144": "expired_token",
           "145": "host_accepts_no_type_of_auth",
           "146": "not_authenticated_fast_fail",
-          "147": "editor_not_allowed"
+          "147": "editor_not_allowed",
+          "148": "missing_structure_data",
+          "149": "unsupported_transport"
         }
       }
     ],
@@ -6768,6 +6785,19 @@
         }
       ]
     ],
+    "NoiseAlignment": [
+      "container",
+      [
+        {
+          "name": "type",
+          "type": "u8"
+        },
+        {
+          "name": "value",
+          "type": "lu32"
+        }
+      ]
+    ],
     "EnvironmentAttributeData": [
       "container",
       [
@@ -6812,6 +6842,10 @@
         {
           "name": "noise_transition",
           "type": "bool"
+        },
+        {
+          "name": "noise_alignment",
+          "type": "NoiseAlignment"
         }
       ]
     ],
@@ -6867,6 +6901,14 @@
         {
           "name": "percent_of_total",
           "type": "u8"
+        },
+        {
+          "name": "position",
+          "type": "vec3f"
+        },
+        {
+          "name": "dimension",
+          "type": "string"
         }
       ]
     ],
@@ -7093,6 +7135,13 @@
           "type": [
             "option",
             "li32"
+          ]
+        },
+        {
+          "name": "line_gap_height",
+          "type": [
+            "option",
+            "lf32"
           ]
         },
         {
@@ -7401,7 +7450,9 @@
                 "347": "server_presence_info",
                 "348": "clientbound_update_sound_data",
                 "349": "send_party_destination_cookie",
-                "350": "party_destination_cookie_response"
+                "350": "party_destination_cookie_response",
+                "351": "set_player_furnace_options",
+                "352": "packet_record_started"
               }
             }
           ]
@@ -7656,7 +7707,9 @@
                 "server_presence_info": "packet_server_presence_info",
                 "clientbound_update_sound_data": "packet_clientbound_update_sound_data",
                 "send_party_destination_cookie": "packet_send_party_destination_cookie",
-                "party_destination_cookie_response": "packet_party_destination_cookie_response"
+                "party_destination_cookie_response": "packet_party_destination_cookie_response",
+                "set_player_furnace_options": "packet_set_player_furnace_options",
+                "record_started": "packet_record_started"
               }
             }
           ]
@@ -10446,10 +10499,6 @@
           "type": "zigzag64"
         },
         {
-          "name": "player_id",
-          "type": "zigzag64"
-        },
-        {
           "name": "type",
           "type": [
             "mapper",
@@ -11253,10 +11302,21 @@
           "type": "varint"
         },
         {
+          "name": "bypass_listener_range_check",
+          "type": "bool"
+        },
+        {
           "name": "handle",
           "type": [
             "option",
             "lu64"
+          ]
+        },
+        {
+          "name": "playback_position_seconds",
+          "type": [
+            "option",
+            "lf32"
           ]
         }
       ]
@@ -12041,6 +12101,10 @@
         {
           "name": "force_completion",
           "type": "bool"
+        },
+        {
+          "name": "ticks",
+          "type": "varint64"
         }
       ]
     ],
@@ -15880,7 +15944,14 @@
                     "fields": {
                       "float": "lf32",
                       "bool": "bool",
-                      "string": "string"
+                      "string": "string",
+                      "array": [
+                        "array",
+                        {
+                          "countType": "varint",
+                          "type": "string"
+                        }
+                      ]
                     }
                   }
                 ]
@@ -16596,6 +16667,48 @@
         {
           "name": "accepted",
           "type": "bool"
+        }
+      ]
+    ],
+    "packet_set_player_furnace_options": [
+      "container",
+      [
+        {
+          "name": "furnace_type",
+          "type": "u8"
+        },
+        {
+          "name": "furnace_options",
+          "type": [
+            "container",
+            [
+              {
+                "name": "left_furnace_tab",
+                "type": "varint"
+              },
+              {
+                "name": "filtering",
+                "type": "bool"
+              },
+              {
+                "name": "layout",
+                "type": "varint"
+              }
+            ]
+          ]
+        }
+      ]
+    ],
+    "packet_record_started": [
+      "container",
+      [
+        {
+          "name": "block_position",
+          "type": "BlockCoordinates"
+        },
+        {
+          "name": "server_sound_handle",
+          "type": "lu64"
         }
       ]
     ]

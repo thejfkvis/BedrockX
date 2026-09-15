@@ -40,5 +40,5 @@ const { createRelay } = require("./src/relay/relay.js");
     realm.transport = realmIP.networkProtocol;
 
     // Change to createRelay if you want to use a relay, otherwise, keep createInstance
-    createInstance(realm, RAPI);
+    createRelay(realm, RAPI);
 })();

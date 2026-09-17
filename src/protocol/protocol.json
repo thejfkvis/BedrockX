@@ -511,55 +511,72 @@
           "type": "li16"
         },
         {
-          "name": "count",
-          "type": "lu16"
-        },
-        {
-          "name": "metadata",
-          "type": "varint"
-        },
-        {
-          "name": "has_stack_id",
-          "type": "bool"
-        },
-        {
-          "name": "stack_id",
-          "type": [
-            "switch",
-            {
-              "compareTo": "has_stack_id",
-              "fields": {
-                "true": "zigzag32"
-              },
-              "default": "void"
-            }
-          ]
-        },
-        {
-          "name": "block_runtime_id",
-          "type": "varint"
-        },
-        {
-          "name": "extra",
+          "anon": true,
           "type": [
             "switch",
             {
               "compareTo": "network_id",
               "fields": {
-                "/ShieldItemID": [
-                  "encapsulated",
-                  {
-                    "lengthType": "varint",
-                    "type": "ItemExtraDataWithBlockingTick"
-                  }
-                ]
+                "0": "void"
               },
               "default": [
-                "encapsulated",
-                {
-                  "lengthType": "varint",
-                  "type": "ItemExtraDataWithoutBlockingTick"
-                }
+                "container",
+                [
+                  {
+                    "name": "count",
+                    "type": "lu16"
+                  },
+                  {
+                    "name": "metadata",
+                    "type": "varint"
+                  },
+                  {
+                    "name": "has_stack_id",
+                    "type": "bool"
+                  },
+                  {
+                    "name": "stack_id",
+                    "type": [
+                      "switch",
+                      {
+                        "compareTo": "has_stack_id",
+                        "fields": {
+                          "true": "zigzag32"
+                        },
+                        "default": "void"
+                      }
+                    ]
+                  },
+                  {
+                    "name": "block_runtime_id",
+                    "type": "varint"
+                  },
+                  {
+                    "name": "extra",
+                    "type": [
+                      "switch",
+                      {
+                        "compareTo": "network_id",
+                        "fields": {
+                          "/ShieldItemID": [
+                            "encapsulated",
+                            {
+                              "lengthType": "varint",
+                              "type": "ItemExtraDataWithBlockingTick"
+                            }
+                          ]
+                        },
+                        "default": [
+                          "encapsulated",
+                          {
+                            "lengthType": "varint",
+                            "type": "ItemExtraDataWithoutBlockingTick"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
               ]
             }
           ]
@@ -666,7 +683,7 @@
           "type": "lf32"
         },
         {
-          "name": "z",
+          "name": "y",
           "type": "lf32"
         }
       ]
@@ -1352,10 +1369,6 @@
         {
           "name": "hotbar_slot",
           "type": "zigzag32"
-        },
-        {
-          "name": "hand",
-          "type": "u8"
         },
         {
           "name": "held_item",
@@ -12863,12 +12876,8 @@
       "container",
       [
         {
-          "name": "pitch",
-          "type": "lf32"
-        },
-        {
-          "name": "yaw",
-          "type": "lf32"
+          "name": "rotation",
+          "type": "vec2f"
         },
         {
           "name": "position",
@@ -12885,14 +12894,84 @@
         {
           "name": "input_data",
           "type": [
-            "option",
-            [
-              "array",
-              {
-                "countType": "varint",
-                "type": "InputData"
-              }
-            ]
+            "array",
+            {
+              "countType": "varint",
+              "type": [
+                "mapper",
+                {
+                  "type": "varint",
+                  "mappings": {
+                    "0": "ascend",
+                    "1": "descend",
+                    "2": "north_jump",
+                    "3": "jump_down",
+                    "4": "sprint_down",
+                    "5": "change_height",
+                    "6": "jumping",
+                    "7": "auto_jumping_in_water",
+                    "8": "sneaking",
+                    "9": "sneak_down",
+                    "10": "up",
+                    "11": "down",
+                    "12": "left",
+                    "13": "right",
+                    "14": "up_left",
+                    "15": "up_right",
+                    "16": "want_up",
+                    "17": "want_down",
+                    "18": "want_down_slow",
+                    "19": "want_up_slow",
+                    "20": "sprinting",
+                    "21": "ascend_block",
+                    "22": "descend_block",
+                    "23": "sneak_toggle_down",
+                    "24": "persist_sneak",
+                    "25": "start_sprinting",
+                    "26": "stop_sprinting",
+                    "27": "start_sneaking",
+                    "28": "stop_sneaking",
+                    "29": "start_swimming",
+                    "30": "stop_swimming",
+                    "31": "start_jumping",
+                    "32": "start_gliding",
+                    "33": "stop_gliding",
+                    "34": "item_interact",
+                    "35": "block_action",
+                    "36": "item_stack_request",
+                    "37": "handled_teleport",
+                    "38": "emoting",
+                    "39": "missed_swing",
+                    "40": "start_crawling",
+                    "41": "stop_crawling",
+                    "42": "start_flying",
+                    "43": "stop_flying",
+                    "44": "received_server_data",
+                    "45": "client_predicted_vehicle",
+                    "46": "paddling_left",
+                    "47": "paddling_right",
+                    "48": "block_breaking_delay_enabled",
+                    "49": "horizontal_collision",
+                    "50": "vertical_collision",
+                    "51": "down_left",
+                    "52": "down_right",
+                    "53": "start_using_item",
+                    "54": "camera_relative_movement_enabled",
+                    "55": "rot_controlled_by_move_direction",
+                    "56": "start_spin_attack",
+                    "57": "stop_spin_attack",
+                    "58": "hotbar_only_touch",
+                    "59": "jump_released_raw",
+                    "60": "jump_pressed_raw",
+                    "61": "jump_current_raw",
+                    "62": "sneak_released_raw",
+                    "63": "sneak_pressed_raw",
+                    "64": "sneak_current_raw",
+                    "65": "internal_update"
+                  }
+                }
+              ]
+            }
           ]
         },
         {
@@ -12959,10 +13038,6 @@
           "type": "vec3f"
         },
         {
-          "name": "transaction_presence",
-          "type": "bool"
-        },
-        {
           "name": "transaction",
           "type": [
             "option",
@@ -12974,15 +13049,8 @@
                   "type": "TransactionLegacy"
                 },
                 {
-                  "name": "actions_presence",
-                  "type": "bool"
-                },
-                {
                   "name": "actions",
-                  "type": [
-                    "option",
-                    "TransactionActions"
-                  ]
+                  "type": "TransactionActions"
                 },
                 {
                   "name": "data",
@@ -12993,19 +13061,11 @@
           ]
         },
         {
-          "name": "item_stack_request_presence",
-          "type": "bool"
-        },
-        {
           "name": "item_stack_request",
           "type": [
             "option",
             "ItemStackRequest"
           ]
-        },
-        {
-          "name": "block_action_presence",
-          "type": "bool"
         },
         {
           "name": "block_action",
@@ -13037,19 +13097,11 @@
           ]
         },
         {
-          "name": "vehicle_rotation_presence",
-          "type": "bool"
-        },
-        {
           "name": "vehicle_rotation",
           "type": [
             "option",
             "vec2f"
           ]
-        },
-        {
-          "name": "predicted_vehicle_presence",
-          "type": "bool"
         },
         {
           "name": "predicted_vehicle",

@@ -508,7 +508,7 @@
       [
         {
           "name": "network_id",
-          "type": "li16"
+          "type": "zigzag32"
         },
         {
           "anon": true,
@@ -732,6 +732,19 @@
           ]
         }
       ]
+    ],
+    "HeightMap": [
+      "array",
+      {
+        "count": 16,
+        "type": [
+          "array",
+          {
+            "countType": "varint",
+            "type": "i8"
+          }
+        ]
+      }
     ],
     "MetadataDictionary": [
       "array",
@@ -1371,6 +1384,19 @@
           "type": "zigzag32"
         },
         {
+          "name": "hand",
+          "type": [
+            "mapper",
+            {
+              "type": "u8",
+              "mappings": {
+                "0": "main_hand",
+                "1": "off_hand"
+              }
+            }
+          ]
+        },
+        {
           "name": "held_item",
           "type": "ItemV4"
         },
@@ -1439,19 +1465,11 @@
               ]
             },
             {
-              "name": "container_presence",
-              "type": "bool"
-            },
-            {
               "name": "window_id",
               "type": [
                 "option",
                 "i8"
               ]
-            },
-            {
-              "name": "flag_presence",
-              "type": "bool"
             },
             {
               "name": "flags",
@@ -1534,28 +1552,22 @@
         {
           "name": "transaction_type",
           "type": [
-            "option",
-            [
-              "mapper",
-              {
-                "type": "varint",
-                "mappings": {
-                  "0": "normal",
-                  "1": "inventory_mismatch",
-                  "2": "item_use",
-                  "3": "item_use_on_entity",
-                  "4": "item_release"
-                }
+            "mapper",
+            {
+              "type": "varint",
+              "mappings": {
+                "0": "normal",
+                "1": "inventory_mismatch",
+                "2": "item_use",
+                "3": "item_use_on_entity",
+                "4": "item_release"
               }
-            ]
+            }
           ]
         },
         {
           "name": "actions",
-          "type": [
-            "option",
-            "TransactionActions"
-          ]
+          "type": "TransactionActions"
         },
         {
           "name": "transaction_data",
@@ -13937,12 +13949,7 @@
               "name": "heightmap",
               "type": [
                 "option",
-                [
-                  "buffer",
-                  {
-                    "count": 256
-                  }
-                ]
+                "HeightMap"
               ]
             },
             {
@@ -13953,12 +13960,7 @@
               "name": "render_heightmap",
               "type": [
                 "option",
-                [
-                  "buffer",
-                  {
-                    "count": 256
-                  }
-                ]
+                "HeightMap"
               ]
             },
             {
@@ -14119,11 +14121,11 @@
                     "type": "string"
                   },
                   {
-                    "name": "max_height",
+                    "name": "min_height",
                     "type": "zigzag32"
                   },
                   {
-                    "name": "min_height",
+                    "name": "height_range",
                     "type": "zigzag32"
                   },
                   {
@@ -14150,6 +14152,10 @@
                   {
                     "name": "pack_id",
                     "type": "uuid"
+                  },
+                  {
+                    "name": "default_biome",
+                    "type": "string"
                   }
                 ]
               ]

@@ -113,6 +113,20 @@ class RealmAPI extends XboxAPI {
 
         return data
     }
+    //Leave a realm by id super tuff for managing bots realms!!!!!!!
+    async leaveRealm(realmID) {
+        if (!this.authToken) await this.init()
+
+        const res = await fetch(`https://${this.endpoint}/invites/${realmID}`, {
+            method: "DELETE",
+            headers: { ...this.headers,authorization: this.authToken},
+            signal: AbortSignal.timeout(15000)
+        })
+        if (res.status === 204) return "success";
+        //anything else than suces (easier to debug as a class user)
+        const body = await res.text();
+        throw new Error(`Failed to leave realm: ${res.status} ${res.statusText} ${body}`)
+    }
 
     async getRealmIP(realmID) {
         while (true) {

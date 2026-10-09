@@ -119,12 +119,17 @@ class RealmAPI extends XboxAPI {
 
         const res = await fetch(`https://${this.endpoint}/invites/${realmID}`, {
             method: "DELETE",
-            headers: { ...this.headers,authorization: this.authToken}
+            headers: {
+                ...this.headers,
+                "authorization": this.authToken,
+            }
         })
 
         if (res.status === 204) return "success";
-        throw new Error(`Failed to leave realm\nStatus: ${res.status}`)
+        
+        return "false;
     }
+    
     async getRealmIP(realmID) {
         while (true) {
             const response = await fetch(`https://${this.endpoint}/worlds/${realmID}/join`, {

@@ -170,7 +170,13 @@ class NethernetJSONRPC extends EventEmitter {
         }
 
         if (Array.isArray(message.result?.TurnAuthServers)) {
-            this.emit("credentials", [])
+            // ICE servers for hosting, so players outside the LAN can reach us
+            this.credentials = message.result.TurnAuthServers.map(server => ({
+                urls: server.Urls,
+                username: server.Username,
+                credential: server.Password
+            }))
+            this.emit("credentials", this.credentials)
             return
         }
 

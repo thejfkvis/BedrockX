@@ -2,10 +2,10 @@ import EventEmitter from 'events'
 import { Authflow, ServerDeviceCodeResponse, Titles } from 'prismarine-auth'
 
 declare module 'bedrockx' {
-    type Version = '1.26.50'
+    type Version = '1.26.60'
 
     export interface Options {
-        // The version of Minecraft Bedrock Edition (Current is v1.26.50, and you must always stay up to date!)
+        // The version of Minecraft Bedrock Edition (Current is v1.26.60, and you must always stay up to date!)
         version: Version,
         // IP address of the server to connect to
         host: string,
@@ -57,4 +57,26 @@ declare module 'bedrockx' {
     }
 
     export function createClient(options: ClientOptions): Client
+
+    export interface ServerOptions {
+        version: Version,
+        // DEFAULT listens on RakNet (host/port), NETHERNET listens for LAN discovery on UDP 7551 and WebRTC joins
+        transport?: 'DEFAULT' | 'NETHERNET',
+        host?: string,
+        port?: number,
+        // NETHERNET only, the network ID to listen on, random if not set
+        networkId?: string | bigint,
+        // NETHERNET only, extra signalling for joins from outside the LAN, such as NethernetJSONRPC
+        signalling?: EventEmitter & { connect?(): Promise<void>, write(signal: object): void },
+        maxPlayers?: number,
+        motd?: { motd: string, levelName: string }
+    }
+
+    export class Server extends EventEmitter {
+        constructor(options: ServerOptions)
+
+        listen(): Promise<{ host?: string, port?: number }>
+
+        close(reason?: string): Promise<void>
+    }
 }

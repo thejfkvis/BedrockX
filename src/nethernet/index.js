@@ -1,4 +1,5 @@
 const { Client } = require('./src/client')
+const { Server } = require('./src/server')
 const { SignalStructure } = require('./src/signalling')
 
 const SignalType = {
@@ -8,4 +9,4 @@ const SignalType = {
   ConnectError: 'CONNECTERROR'
 }
 
-module.exports = { Client, SignalType, SignalStructure }
+module.exports = { Client, Server, SignalType, SignalStructure }

@@ -4,9 +4,8 @@ const { EventEmitter } = require('node:events')
 const { Connection } = require('./connection')
 const { PACKET_TYPE, createDeserializer, createSerializer } = require('./serializer')
 const { SignalStructure, SignalType } = require('./signalling')
-const { createPacketData, getRandomUint64, prepareSecurePacket, processSecurePacket } = require('./util')
+const { createAssertion, createPacketData, getRandomUint64, prepareSecurePacket, processSecurePacket } = require('./util')
 const { RTCPeerConnection, RTCIceCandidate } = require('@roamhq/wrtc')
-const { CompactSign, importPKCS8 } = require("jose");
 
 const PORT = 7551
 const BROADCAST_ADDRESS = '255.255.255.255'
@@ -86,24 +85,7 @@ class Client extends EventEmitter {
   }
 
   async createAssertion(fingerprint, token) {
-    const payload = JSON.stringify({ fingerprint: [{ algorithm: "sha-256", digest: fingerprint }] });
-    const jws = await new CompactSign(Buffer.from(payload)).setProtectedHeader({ alg: "ES384" }).sign(this.ecdhKeyPair.privateKey);
-
-    const parts = jws.split(".");
-    const fingerprints = `${parts[0]}..${parts[2]}`;
-
-    const data = {
-      assertion: JSON.stringify({
-        fingerprints,
-        token
-      }),
-      idp: {
-        domain: "https://authorization.franchise.minecraft-services.net/",
-        protocol: "default",
-      }
-    }
-
-    return Buffer.from(JSON.stringify(data)).toString('base64')
+    return createAssertion(fingerprint, token, this.ecdhKeyPair)
   }
 
   async createOffer() {
@@ -212,11 +194,13 @@ class Client extends EventEmitter {
   }
 
   sendDiscoveryMessage(signal) {
-    const rinfo = this.addresses.get(BigInt(signal.networkId))
+    // Our signals carry our own ID in networkId, so send them to the server
+    const recipientId = BigInt(signal.serverNetworkId ?? signal.networkId)
+    const rinfo = this.addresses.get(recipientId)
     if (!rinfo) return
 
     const packetData = createPacketData('discovery_message', PACKET_TYPE.DISCOVERY_MESSAGE, this.networkId, {
-      recipient_id: BigInt(signal.networkId),
+      recipient_id: recipientId,
       data: signal.toString()
     })
 

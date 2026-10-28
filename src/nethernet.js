@@ -1,4 +1,4 @@
-const { Client } = require('./nethernet/index')
+const { Client, Server, SignalStructure } = require('./nethernet/index')
 
 class NethernetClient {
   constructor(options = {}) {
@@ -56,4 +56,68 @@ class NethernetClient {
   }
 }
 
-module.exports = { NethernetClient }
+class NethernetServer {
+  constructor(options = {}, server) {
+    this.onOpenConnection = () => {}
+    this.onCloseConnection = () => {}
+    this.onEncapsulated = () => {}
+    this.onClose = () => {}
+
+    // Optional online signalling, such as NethernetJSONRPC, LAN discovery is always on
+    this.signalling = options.signalling
+
+    // LAN discovery always uses port 7551, so the RakNet port option doesn't apply
+    this.nethernet = new Server(options.networkId, {
+      token: options.token,
+      ecdhKeyPair: options.ecdhKeyPair,
+      maxConnections: options.maxPlayers
+    })
+
+    this.updateAdvertisement = () => {
+      this.nethernet.setAdvertisement(server.getAdvertisement().toBuffer())
+    }
+
+    this.nethernet.on('openConnection', (connection) => {
+      connection.sendReliable = (buffer) => connection.send(buffer)
+      this.onOpenConnection(connection)
+    })
+
+    this.nethernet.on('closeConnection', (connection, reason) => {
+      this.onCloseConnection(connection, reason)
+    })
+
+    this.nethernet.on('encapsulated', (buffer, address) => {
+      this.onEncapsulated(buffer, address)
+    })
+
+    this.nethernet.on('error', (e) => console.error('NetherNet server error:', e))
+  }
+
+  get networkId() {
+    return this.nethernet.networkId
+  }
+
+  async listen() {
+    this.updateAdvertisement()
+    await this.nethernet.listen()
+
+    if (this.signalling) {
+      await this.signalling.connect?.()
+      this.nethernet.credentials = this.signalling.credentials ?? []
+
+      this.signalling.on('signal', (signal) => {
+        this.nethernet.handleSignal(signal, (reply) => {
+          // Send back to whoever sent the offer
+          this.signalling.write(new SignalStructure(reply.type, reply.connectionId, reply.data, this.nethernet.networkId, signal.serverNetworkId))
+        })
+      })
+    }
+  }
+
+  close() {
+    this.signalling?.destroy?.()
+    this.nethernet.close()
+  }
+}
+
+module.exports = { NethernetClient, NethernetServer }

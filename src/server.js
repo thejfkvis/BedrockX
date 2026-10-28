@@ -102,8 +102,8 @@ class Server extends EventEmitter {
   }
 
   async listen() {
-    const { host, port, networkId, maxPlayers } = this.options
-    this.transport = new this.transportServer({ host, port, networkId, maxPlayers }, this)
+    const { host, port, networkId, maxPlayers, signalling, token, ecdhKeyPair } = this.options
+    this.transport = new this.transportServer({ host, port, networkId, maxPlayers, signalling, token, ecdhKeyPair }, this)
 
     try {
       await this.transport.listen()
@@ -112,7 +112,11 @@ class Server extends EventEmitter {
       throw e
     }
 
-    console.log('Listening on', host, port, this.options.version)
+    if (this.transport.networkId !== undefined) {
+      console.log('Listening on NetherNet network ID', String(this.transport.networkId), this.options.version)
+    } else {
+      console.log('Listening on', host, port, this.options.version)
+    }
     this.transport.onOpenConnection = this.onOpenConnection
     this.transport.onCloseConnection = this.onCloseConnection
     this.transport.onEncapsulated = this.onEncapsulated

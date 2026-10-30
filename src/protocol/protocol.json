@@ -1123,6 +1123,41 @@
         "type": "Link"
       }
     ],
+    "PassengerOfBlockData": [
+      "container",
+      [
+        {
+          "name": "block_position",
+          "type": "BlockCoordinates"
+        },
+        {
+          "name": "offset",
+          "type": "vec3f"
+        },
+        {
+          "name": "rotation",
+          "type": "lf32"
+        },
+        {
+          "name": "rotation_limit",
+          "type": "lf32"
+        },
+        {
+          "name": "emote_type",
+          "type": [
+            "mapper",
+            {
+              "type": "u8",
+              "mappings": {
+                "0": "standing",
+                "1": "riding",
+                "2": "laying"
+              }
+            }
+          ]
+        }
+      ]
+    ],
     "EntityAttributes": [
       "array",
       {
@@ -1575,6 +1610,19 @@
                       "type": "zigzag32"
                     },
                     {
+                      "name": "hand",
+                      "type": [
+                        "mapper",
+                        {
+                          "type": "u8",
+                          "mappings": {
+                            "0": "main_hand",
+                            "1": "off_hand"
+                          }
+                        }
+                      ]
+                    },
+                    {
                       "name": "held_item",
                       "type": "ItemV4"
                     },
@@ -1615,6 +1663,19 @@
                     {
                       "name": "head_pos",
                       "type": "vec3f"
+                    },
+                    {
+                      "name": "hand",
+                      "type": [
+                        "mapper",
+                        {
+                          "type": "u8",
+                          "mappings": {
+                            "0": "main_hand",
+                            "1": "off_hand"
+                          }
+                        }
+                      ]
                     }
                   ]
                 ]
@@ -2073,7 +2134,8 @@
           "25": "capes",
           "26": "classic_skin",
           "27": "emote",
-          "28": "unsupported"
+          "28": "coco",
+          "29": "unsupported"
         }
       }
     ],
@@ -2082,10 +2144,6 @@
       [
         {
           "name": "skin_id",
-          "type": "string"
-        },
-        {
-          "name": "play_fab_id",
           "type": "string"
         },
         {
@@ -2251,7 +2309,7 @@
         },
         {
           "name": "trusted",
-          "type": "string"
+          "type": "bool"
         },
         {
           "name": "profile_hash",
@@ -2306,6 +2364,10 @@
                       "type": "string"
                     },
                     {
+                      "name": "play_fab_id",
+                      "type": "string"
+                    },
+                    {
                       "name": "platform_chat_id",
                       "type": "string"
                     },
@@ -2350,7 +2412,7 @@
         }
       ]
     ],
-   "PlayerRecords": [
+    "PlayerRecords": [
       "array",
       {
         "countType": "varint",
@@ -2663,8 +2725,9 @@
                           "13": "optional",
                           "14": "craft_grindstone_request",
                           "15": "craft_loom_request",
-                          "16": "non_implemented",
-                          "17": "results_deprecated"
+                          "16": "craft_reserved",
+                          "17": "non_implemented",
+                          "18": "results_deprecated"
                         }
                       }
                     ]
@@ -2893,6 +2956,19 @@
                             [
                               {
                                 "name": "pattern",
+                                "type": "string"
+                              },
+                              {
+                                "name": "times_crafted",
+                                "type": "u8"
+                              }
+                            ]
+                          ],
+                          "craft_reserved": [
+                            "container",
+                            [
+                              {
+                                "name": "reserved_id",
                                 "type": "string"
                               },
                               {
@@ -3641,7 +3717,11 @@
           "64": "registry",
           "65": "recipe_food",
           "66": "recipe_blocks",
-          "67": "recipe_furnace_items"
+          "67": "recipe_furnace_items",
+          "68": "reserved_container_a",
+          "69": "reserved_container_b",
+          "70": "reserved_container_c",
+          "71": "reserved_container_d"
         }
       }
     ],
@@ -4878,91 +4958,110 @@
                 "4": "actor_rendering",
                 "5": "block_ticking_queues",
                 "6": "biome_storage",
-                "7": "cereal",
-                "8": "circuit_system",
-                "9": "client",
-                "10": "commands",
-                "11": "db_storage",
-                "12": "debug",
-                "13": "documentation",
-                "14": "ecs_systems",
-                "15": "fmod",
-                "16": "fonts",
-                "17": "im_gui",
-                "18": "input",
-                "19": "json_ui",
-                "20": "json_ui_control_factory_json",
-                "21": "json_ui_control_tree",
-                "22": "json_ui_control_tree_control_element",
-                "23": "json_ui_control_tree_populate_data_binding",
-                "24": "json_ui_control_tree_populate_focus",
-                "25": "json_ui_control_tree_populate_layout",
-                "26": "json_ui_control_tree_populate_other",
-                "27": "json_ui_control_tree_populate_sprite",
-                "28": "json_ui_control_tree_populate_text",
-                "29": "json_ui_control_tree_populate_tts",
-                "30": "json_ui_control_tree_visibility",
-                "31": "json_ui_create_ui",
-                "32": "json_ui_defs",
-                "33": "json_ui_layout_manager",
-                "34": "json_ui_layout_manager_remove_dependencies",
-                "35": "json_ui_layout_manager_init_variable",
-                "36": "languages",
-                "37": "level",
-                "38": "level_structures",
-                "39": "level_chunk",
-                "40": "level_chunk_gen",
-                "41": "level_chunk_gen_thread_local",
-                "42": "light_volume_manager",
-                "43": "network",
-                "44": "marketplace",
-                "45": "material_dragon_compiled_definition",
-                "46": "material_dragon_material",
-                "47": "material_dragon_resource",
-                "48": "material_dragon_uniform_map",
-                "49": "material_render_material",
-                "50": "material_render_material_group",
-                "51": "material_variation_manager",
-                "52": "molang",
-                "53": "ore_ui",
-                "54": "persona",
-                "55": "player",
-                "56": "render_chunk",
-                "57": "render_chunk_index_buffer",
-                "58": "render_chunk_vertex_buffer",
-                "59": "rendering",
-                "60": "rendering_library",
-                "61": "request_log",
-                "62": "resource_packs",
-                "63": "sound",
-                "64": "sub_chunk_biome_data",
-                "65": "sub_chunk_block_data",
-                "66": "sub_chunk_light_data",
-                "67": "textures",
-                "68": "vr",
-                "69": "weather_renderer",
-                "70": "world_generator",
-                "71": "tasks",
-                "72": "test",
-                "73": "scripting",
-                "74": "scripting_runtime",
-                "75": "scripting_context",
-                "76": "scripting_context_bindings_mc",
-                "77": "scripting_context_bindings_gt",
-                "78": "scripting_context_run",
-                "79": "data_driven_ui",
-                "80": "data_driven_ui_defs",
-                "81": "gameface",
-                "82": "gameface_system",
-                "83": "gameface_dom",
-                "84": "gameface_css",
-                "85": "gameface_display",
-                "86": "gameface_temp_allocator",
-                "87": "gameface_pool_allocator",
-                "88": "gameface_dump",
-                "89": "gameface_media",
-                "90": "gameface_json",
-                "91": "gameface_script_engine"
+                "7": "blobs",
+                "8": "cereal",
+                "9": "circuit_system",
+                "10": "client",
+                "11": "commands",
+                "12": "db_storage",
+                "13": "debug",
+                "14": "documentation",
+                "15": "ecs_systems",
+                "16": "fmod",
+                "17": "fonts",
+                "18": "im_gui",
+                "19": "input",
+                "20": "json_ui",
+                "21": "json_ui_control_factory_json",
+                "22": "json_ui_control_tree",
+                "23": "json_ui_control_tree_control_element",
+                "24": "json_ui_control_tree_populate_data_binding",
+                "25": "json_ui_control_tree_populate_focus",
+                "26": "json_ui_control_tree_populate_layout",
+                "27": "json_ui_control_tree_populate_other",
+                "28": "json_ui_control_tree_populate_sprite",
+                "29": "json_ui_control_tree_populate_text",
+                "30": "json_ui_control_tree_populate_tts",
+                "31": "json_ui_control_tree_visibility",
+                "32": "json_ui_create_ui",
+                "33": "json_ui_defs",
+                "34": "json_ui_layout_manager",
+                "35": "json_ui_layout_manager_remove_dependencies",
+                "36": "json_ui_layout_manager_init_variable",
+                "37": "languages",
+                "38": "level",
+                "39": "level_structures",
+                "40": "level_chunk",
+                "41": "level_chunk_gen",
+                "42": "level_chunk_gen_thread_local",
+                "43": "light_volume_manager",
+                "44": "network",
+                "45": "marketplace",
+                "46": "material_dragon_compiled_definition",
+                "47": "material_dragon_material",
+                "48": "material_dragon_resource",
+                "49": "material_dragon_uniform_map",
+                "50": "material_render_material",
+                "51": "material_render_material_group",
+                "52": "material_variation_manager",
+                "53": "molang",
+                "54": "ore_ui",
+                "55": "ore_ui_client",
+                "56": "persona_pieces",
+                "57": "persona_animations",
+                "58": "persona_characters",
+                "59": "persona_skin_packs",
+                "60": "persona_repo",
+                "61": "player",
+                "62": "render_chunk",
+                "63": "render_chunk_index_buffer",
+                "64": "render_chunk_vertex_buffer",
+                "65": "rendering",
+                "66": "rendering_bgfx_init",
+                "67": "rendering_bgfx_start_frame",
+                "68": "rendering_block_tessellator",
+                "69": "rendering_end_frame",
+                "70": "rendering_graphics_tasks_init",
+                "71": "rendering_library",
+                "72": "rendering_polygon_operator_pool",
+                "73": "rendering_pbr_texture_data",
+                "74": "rendering_render_registry",
+                "75": "rendering_setup",
+                "76": "rendering_vertices",
+                "77": "request_log",
+                "78": "resource_packs",
+                "79": "sound",
+                "80": "sub_chunk_biome_data",
+                "81": "sub_chunk_block_data",
+                "82": "sub_chunk_light_data",
+                "83": "textures",
+                "84": "weather_renderer",
+                "85": "world_generator",
+                "86": "tasks",
+                "87": "test",
+                "88": "test_load_test_tags",
+                "89": "scripting",
+                "90": "scripting_runtime",
+                "91": "scripting_context",
+                "92": "scripting_context_bindings_mc",
+                "93": "scripting_context_bindings_gt",
+                "94": "scripting_context_run",
+                "95": "data_driven_ui",
+                "96": "data_driven_ui_defs",
+                "97": "gameface",
+                "98": "gameface_system",
+                "99": "gameface_dom",
+                "100": "gameface_css",
+                "101": "gameface_display",
+                "102": "gameface_temp_allocator",
+                "103": "gameface_pool_allocator",
+                "104": "gameface_dump",
+                "105": "gameface_media",
+                "106": "gameface_json",
+                "107": "gameface_script_engine",
+                "108": "gameface_script",
+                "109": "gameface_layout",
+                "110": "executable"
               }
             }
           ]
@@ -5332,7 +5431,8 @@
           "146": "not_authenticated_fast_fail",
           "147": "editor_not_allowed",
           "148": "missing_structure_data",
-          "149": "unsupported_transport"
+          "149": "unsupported_transport",
+          "150": "sub_client_login_not_bound"
         }
       }
     ],
@@ -6154,7 +6254,7 @@
     "EaseType": [
       "mapper",
       {
-        "type": "u8",
+        "type": "varint",
         "mappings": {
           "0": "Linear",
           "1": "Spring",
@@ -6785,42 +6885,128 @@
           "type": "string"
         },
         {
-          "name": "from_attribute",
+          "name": "payload_type",
           "type": [
-            "option",
-            "AttributeData"
+            "mapper",
+            {
+              "type": "varint",
+              "mappings": {
+                "0": "constant",
+                "1": "transition",
+                "2": "noise_transition"
+              }
+            }
           ]
         },
         {
-          "name": "attribute",
-          "type": "AttributeData"
-        },
-        {
-          "name": "to_attribute",
+          "anon": true,
           "type": [
-            "option",
-            "AttributeData"
+            "switch",
+            {
+              "compareTo": "payload_type",
+              "fields": {
+                "constant": [
+                  "container",
+                  [
+                    {
+                      "name": "attribute",
+                      "type": "AttributeData"
+                    }
+                  ]
+                ],
+                "transition": [
+                  "container",
+                  [
+                    {
+                      "name": "from_attribute",
+                      "type": "AttributeData"
+                    },
+                    {
+                      "name": "to_attribute",
+                      "type": "AttributeData"
+                    },
+                    {
+                      "name": "total_transition_ticks",
+                      "type": "varint"
+                    },
+                    {
+                      "name": "current_transition_ticks",
+                      "type": "varint"
+                    },
+                    {
+                      "name": "ease_type",
+                      "type": "EaseType"
+                    },
+                    {
+                      "name": "clock_name",
+                      "type": "string"
+                    }
+                  ]
+                ],
+                "noise_transition": [
+                  "container",
+                  [
+                    {
+                      "name": "from_attribute",
+                      "type": "AttributeData"
+                    },
+                    {
+                      "name": "to_attribute",
+                      "type": "AttributeData"
+                    },
+                    {
+                      "name": "total_transition_ticks",
+                      "type": "varint"
+                    },
+                    {
+                      "name": "current_transition_ticks",
+                      "type": "varint"
+                    },
+                    {
+                      "name": "ease_type",
+                      "type": "EaseType"
+                    },
+                    {
+                      "name": "clock_name",
+                      "type": "string"
+                    },
+                    {
+                      "name": "local_transition_ticks",
+                      "type": "varint"
+                    },
+                    {
+                      "name": "noise_name",
+                      "type": "string"
+                    },
+                    {
+                      "name": "noise_alignment",
+                      "type": [
+                        "container",
+                        [
+                          {
+                            "name": "type",
+                            "type": [
+                              "mapper",
+                              {
+                                "type": "u8",
+                                "mappings": {
+                                  "0": "min_local_transition_end"
+                                }
+                              }
+                            ]
+                          },
+                          {
+                            "name": "value",
+                            "type": "varint"
+                          }
+                        ]
+                      ]
+                    }
+                  ]
+                ]
+              }
+            }
           ]
-        },
-        {
-          "name": "current_transition_ticks",
-          "type": "lu32"
-        },
-        {
-          "name": "total_transition_ticks",
-          "type": "lu32"
-        },
-        {
-          "name": "ease_type",
-          "type": "li32"
-        },
-        {
-          "name": "local_transition_ticks",
-          "type": "lu32"
-        },
-        {
-          "name": "noise_transition",
-          "type": "bool"
         }
       ]
     ],
@@ -6830,13 +7016,6 @@
         {
           "name": "name",
           "type": "string"
-        },
-        {
-          "name": "noise_name",
-          "type": [
-            "option",
-            "string"
-          ]
         },
         {
           "name": "dimension_id",
@@ -6879,11 +7058,17 @@
         },
         {
           "name": "position",
-          "type": "vec3f"
+          "type": [
+            "option",
+            "vec3f"
+          ]
         },
         {
           "name": "dimension",
-          "type": "string"
+          "type": [
+            "option",
+            "string"
+          ]
         }
       ]
     ],
@@ -6954,7 +7139,7 @@
           "type": "varint64"
         },
         {
-          "name": "type",
+          "name": "shape_type",
           "type": [
             "option",
             [
@@ -6967,7 +7152,11 @@
                   "2": "sphere",
                   "3": "circle",
                   "4": "text",
-                  "5": "arrow"
+                  "5": "arrow",
+                  "6": "cylinder",
+                  "7": "pyramid",
+                  "8": "ellipsoid",
+                  "9": "cone"
                 }
               }
             ]
@@ -6995,7 +7184,7 @@
           ]
         },
         {
-          "name": "total_time_left",
+          "name": "time_left",
           "type": [
             "option",
             "lf32"
@@ -7012,7 +7201,7 @@
           "name": "color",
           "type": [
             "option",
-            "li32"
+            "beargb"
           ]
         },
         {
@@ -7030,18 +7219,43 @@
           ]
         },
         {
-          "name": "extra_shape_data",
+          "name": "shape_data_type",
+          "type": [
+            "mapper",
+            {
+              "type": "varint",
+              "mappings": {
+                "0": "last",
+                "1": "arrow",
+                "2": "text",
+                "3": "box",
+                "4": "line",
+                "5": "sphere",
+                "6": "cylinder",
+                "7": "pyramid",
+                "8": "ellipsoid",
+                "9": "cone"
+              }
+            }
+          ]
+        },
+        {
+          "name": "shape_data",
           "type": [
             "switch",
             {
-              "compareTo": "type",
+              "compareTo": "shape_data_type",
               "fields": {
-                "line": "ShapeLine",
-                "box": "ShapeBox",
-                "sphere": "ShapeSphere",
-                "circle": "ShapeCircle",
+                "last": "void",
+                "arrow": "ShapeArrow",
                 "text": "ShapeText",
-                "arrow": "ShapeArrow"
+                "box": "ShapeBox",
+                "line": "ShapeLine",
+                "sphere": "ShapeSphere",
+                "cylinder": "ShapeCylinder",
+                "pyramid": "ShapePyramid",
+                "ellipsoid": "ShapeEllipsoid",
+                "cone": "ShapeCone"
               },
               "default": "void"
             }
@@ -7053,7 +7267,7 @@
       "container",
       [
         {
-          "name": "end_location",
+          "name": "line_end_location",
           "type": "vec3f"
         }
       ]
@@ -7071,23 +7285,8 @@
       "container",
       [
         {
-          "name": "segment_count",
-          "type": [
-            "option",
-            "u8"
-          ]
-        }
-      ]
-    ],
-    "ShapeCircle": [
-      "container",
-      [
-        {
-          "name": "segment_count",
-          "type": [
-            "option",
-            "u8"
-          ]
+          "name": "segments",
+          "type": "u8"
         }
       ]
     ],
@@ -7100,38 +7299,30 @@
         },
         {
           "name": "use_rotation",
-          "type": [
-            "option",
-            "bool"
-          ]
+          "type": "bool"
         },
         {
           "name": "background_color",
           "type": [
             "option",
-            "li32"
+            "beargb"
           ]
+        },
+        {
+          "name": "line_gap_height",
+          "type": "lf32"
         },
         {
           "name": "depth_test",
-          "type": [
-            "option",
-            "bool"
-          ]
+          "type": "bool"
         },
         {
           "name": "show_backface",
-          "type": [
-            "option",
-            "bool"
-          ]
+          "type": "bool"
         },
         {
           "name": "show_backface_text",
-          "type": [
-            "option",
-            "bool"
-          ]
+          "type": "bool"
         }
       ]
     ],
@@ -7139,16 +7330,103 @@
       "container",
       [
         {
-          "name": "end_location",
-          "type": "vec3f"
+          "name": "arrow_end_location",
+          "type": [
+            "option",
+            "vec3f"
+          ]
         },
         {
           "name": "arrow_head_length",
-          "type": "lf32"
+          "type": [
+            "option",
+            "lf32"
+          ]
         },
         {
           "name": "arrow_head_radius",
+          "type": [
+            "option",
+            "lf32"
+          ]
+        },
+        {
+          "name": "segments",
+          "type": [
+            "option",
+            "u8"
+          ]
+        }
+      ]
+    ],
+    "ShapeCylinder": [
+      "container",
+      [
+        {
+          "name": "radius_x",
+          "type": "vec2f"
+        },
+        {
+          "name": "radius_z",
+          "type": "vec2f"
+        },
+        {
+          "name": "height",
           "type": "lf32"
+        },
+        {
+          "name": "num_segments",
+          "type": "u8"
+        }
+      ]
+    ],
+    "ShapePyramid": [
+      "container",
+      [
+        {
+          "name": "width",
+          "type": "lf32"
+        },
+        {
+          "name": "depth",
+          "type": [
+            "option",
+            "lf32"
+          ]
+        },
+        {
+          "name": "height",
+          "type": "lf32"
+        }
+      ]
+    ],
+    "ShapeEllipsoid": [
+      "container",
+      [
+        {
+          "name": "radii",
+          "type": "vec3f"
+        },
+        {
+          "name": "segments_per_axis",
+          "type": "u8"
+        }
+      ]
+    ],
+    "ShapeCone": [
+      "container",
+      [
+        {
+          "name": "radii",
+          "type": "vec2f"
+        },
+        {
+          "name": "height",
+          "type": "lf32"
+        },
+        {
+          "name": "num_segments",
+          "type": "u8"
         }
       ]
     ],
@@ -7363,7 +7641,7 @@
                 "161": "correct_player_move_prediction",
                 "162": "item_registry",
                 "163": "filter_text_packet",
-                "164": "primitive_shapes",
+                "164": "clientbound_debug_renderer",
                 "165": "sync_entity_property",
                 "166": "add_volume_entity",
                 "167": "remove_volume_entity",
@@ -7426,7 +7704,7 @@
                 "325": "player_update_entity_overrides",
                 "326": "player_location",
                 "327": "clientbound_controls_scheme",
-                "328": "server_script_debug_drawer",
+                "328": "primitive_shapes",
                 "329": "serverbound_pack_setting_change",
                 "330": "clientbound_data_store",
                 "331": "graphics_override_parameter",
@@ -7450,7 +7728,15 @@
                 "349": "send_party_destination_cookie",
                 "350": "party_destination_cookie_response",
                 "351": "set_player_furnace_options",
-                "352": "record_started"
+                "352": "record_started",
+                "353": "clientbound_matchmaking_state",
+                "354": "serverbound_stonecutter_set_recipe",
+                "355": "clientbound_stonecutter_set_recipe",
+                "356": "serverbound_matchmaking_cancel",
+                "357": "set_passenger_of_block",
+                "358": "serverbound_cursor_item_drag",
+                "359": "clientbound_play_audio_content",
+                "360": "serverbound_register_audio_content"
               }
             }
           ]
@@ -7619,7 +7905,7 @@
                 "correct_player_move_prediction": "packet_correct_player_move_prediction",
                 "item_registry": "packet_item_registry",
                 "filter_text_packet": "packet_filter_text_packet",
-                "primitive_shapes": "packet_primitive_shapes",
+                "clientbound_debug_renderer": "packet_clientbound_debug_renderer",
                 "sync_entity_property": "packet_sync_entity_property",
                 "add_volume_entity": "packet_add_volume_entity",
                 "remove_volume_entity": "packet_remove_volume_entity",
@@ -7683,7 +7969,7 @@
                 "player_update_entity_overrides": "packet_player_update_entity_overrides",
                 "player_location": "packet_player_location",
                 "clientbound_controls_scheme": "packet_clientbound_controls_scheme",
-                "server_script_debug_drawer": "packet_server_script_debug_drawer",
+                "primitive_shapes": "packet_primitive_shapes",
                 "serverbound_pack_setting_change": "packet_serverbound_pack_setting_change",
                 "clientbound_data_store": "packet_clientbound_data_store",
                 "graphics_override_parameter": "packet_graphics_override_parameter",
@@ -7707,7 +7993,15 @@
                 "send_party_destination_cookie": "packet_send_party_destination_cookie",
                 "party_destination_cookie_response": "packet_party_destination_cookie_response",
                 "set_player_furnace_options": "packet_set_player_furnace_options",
-                "record_started": "packet_record_started"
+                "record_started": "packet_record_started",
+                "clientbound_matchmaking_state": "packet_clientbound_matchmaking_state",
+                "serverbound_stonecutter_set_recipe": "packet_serverbound_stonecutter_set_recipe",
+                "clientbound_stonecutter_set_recipe": "packet_clientbound_stonecutter_set_recipe",
+                "serverbound_matchmaking_cancel": "packet_serverbound_matchmaking_cancel",
+                "set_passenger_of_block": "packet_set_passenger_of_block",
+                "serverbound_cursor_item_drag": "packet_serverbound_cursor_item_drag",
+                "clientbound_play_audio_content": "packet_clientbound_play_audio_content",
+                "serverbound_register_audio_content": "packet_serverbound_register_audio_content"
               }
             }
           ]
@@ -8267,6 +8561,19 @@
           "type": "bool"
         },
         {
+          "name": "editor_level_migration_version",
+          "type": [
+            "mapper",
+            {
+              "type": "u8",
+              "mappings": {
+                "0": "legacy",
+                "1": "editor_achievements"
+              }
+            }
+          ]
+        },
+        {
           "name": "day_cycle_stop_time",
           "type": "zigzag32"
         },
@@ -8630,6 +8937,13 @@
           "type": "Links"
         },
         {
+          "name": "passenger_of_block",
+          "type": [
+            "option",
+            "PassengerOfBlockData"
+          ]
+        },
+        {
           "name": "device_id",
           "type": "string"
         },
@@ -8693,6 +9007,13 @@
         {
           "name": "links",
           "type": "Links"
+        },
+        {
+          "name": "passenger_of_block",
+          "type": [
+            "option",
+            "PassengerOfBlockData"
+          ]
         }
       ]
     ],
@@ -9177,7 +9498,8 @@
                 "16462": "add_particle_spore_blossom_shower",
                 "16463": "add_particle_spore_blossom_ambient",
                 "16464": "add_particle_wax",
-                "16465": "add_particle_electric_spark"
+                "16465": "add_particle_electric_spark",
+                "16489": "add_particle_ice_ball_break"
               }
             }
           ]
@@ -9690,6 +10012,19 @@
               }
             }
           ]
+        },
+        {
+          "name": "hand",
+          "type": [
+            "mapper",
+            {
+              "type": "u8",
+              "mappings": {
+                "0": "main_hand",
+                "1": "off_hand"
+              }
+            }
+          ]
         }
       ]
     ],
@@ -10144,6 +10479,10 @@
         {
           "name": "payload",
           "type": "ByteArray"
+        },
+        {
+          "name": "client_biome_update",
+          "type": "bool"
         }
       ]
     ],
@@ -12644,12 +12983,11 @@
                   "container",
                   [
                     {
-                      "name": "has",
-                      "type": "bool"
-                    },
-                    {
                       "name": "can_modify_blocks",
-                      "type": "bool"
+                      "type": [
+                        "option",
+                        "bool"
+                      ]
                     }
                   ]
                 ]
@@ -13571,6 +13909,52 @@
         }
       ]
     ],
+    "packet_clientbound_debug_renderer": [
+      "container",
+      [
+        {
+          "name": "type",
+          "type": "string"
+        },
+        {
+          "name": "has_data",
+          "type": "bool"
+        },
+        {
+          "name": "debug_marker_data",
+          "type": [
+            "switch",
+            {
+              "compareTo": "has_data",
+              "fields": {
+                "true": [
+                  "container",
+                  [
+                    {
+                      "name": "text",
+                      "type": "string"
+                    },
+                    {
+                      "name": "position",
+                      "type": "vec3f"
+                    },
+                    {
+                      "name": "color",
+                      "type": "beargb"
+                    },
+                    {
+                      "name": "duration",
+                      "type": "lu64"
+                    }
+                  ]
+                ]
+              },
+              "default": "void"
+            }
+          ]
+        }
+      ]
+    ],
     "packet_filter_text_packet": [
       "container",
       [
@@ -13581,21 +13965,6 @@
         {
           "name": "from_server",
           "type": "bool"
-        }
-      ]
-    ],
-    "packet_primitive_shapes": [
-      "container",
-      [
-        {
-          "name": "shapes",
-          "type": [
-            "array",
-            {
-              "countType": "varint",
-              "type": "PrimitiveShape"
-            }
-          ]
         }
       ]
     ],
@@ -14064,6 +14433,14 @@
                   {
                     "name": "default_biome",
                     "type": "string"
+                  },
+                  {
+                    "name": "cloud_height",
+                    "type": "varint"
+                  },
+                  {
+                    "name": "render_clouds",
+                    "type": "bool"
                   }
                 ]
               ]
@@ -15117,11 +15494,14 @@
         {
           "name": "system_categories",
           "type": [
-            "array",
-            {
-              "countType": "varint",
-              "type": "SystemCategory"
-            }
+            "option",
+            [
+              "array",
+              {
+                "countType": "varint",
+                "type": "SystemCategory"
+              }
+            ]
           ]
         },
         {
@@ -15730,6 +16110,21 @@
         }
       ]
     ],
+    "packet_primitive_shapes": [
+      "container",
+      [
+        {
+          "name": "shapes",
+          "type": [
+            "array",
+            {
+              "countType": "varint",
+              "type": "PrimitiveShape"
+            }
+          ]
+        }
+      ]
+    ],
     "packet_clientbound_controls_scheme": [
       "container",
       [
@@ -15746,309 +16141,6 @@
                 "3": "player_relative",
                 "4": "player_relative_strafe"
               }
-            }
-          ]
-        }
-      ]
-    ],
-    "packet_server_script_debug_drawer": [
-      "container",
-      [
-        {
-          "name": "shapes",
-          "type": [
-            "array",
-            {
-              "countType": "varint",
-              "type": [
-                "container",
-                [
-                  {
-                    "name": "network_id",
-                    "type": "varint64"
-                  },
-                  {
-                    "name": "shape_type",
-                    "type": [
-                      "option",
-                      [
-                        "mapper",
-                        {
-                          "type": "u8",
-                          "mappings": {
-                            "0": "line",
-                            "1": "box",
-                            "2": "sphere",
-                            "3": "circle",
-                            "4": "text",
-                            "5": "arrow",
-                            "6": "cylinder",
-                            "7": "pyramid",
-                            "8": "ellipsoid",
-                            "9": "cone"
-                          }
-                        }
-                      ]
-                    ]
-                  },
-                  {
-                    "name": "location",
-                    "type": [
-                      "option",
-                      "vec3f"
-                    ]
-                  },
-                  {
-                    "name": "scale",
-                    "type": [
-                      "option",
-                      "lf32"
-                    ]
-                  },
-                  {
-                    "name": "rotation",
-                    "type": [
-                      "option",
-                      "vec3f"
-                    ]
-                  },
-                  {
-                    "name": "time_left",
-                    "type": [
-                      "option",
-                      "lf32"
-                    ]
-                  },
-                  {
-                    "name": "max_render_distance",
-                    "type": [
-                      "option",
-                      "lf32"
-                    ]
-                  },
-                  {
-                    "name": "color",
-                    "type": [
-                      "option",
-                      "beargb"
-                    ]
-                  },
-                  {
-                    "name": "dimension_id",
-                    "type": [
-                      "option",
-                      "zigzag32"
-                    ]
-                  },
-                  {
-                    "name": "attached_to_entity_id",
-                    "type": [
-                      "option",
-                      "zigzag64"
-                    ]
-                  },
-                  {
-                    "name": "shape_data_type",
-                    "type": [
-                      "mapper",
-                      {
-                        "type": "varint",
-                        "mappings": {
-                          "0": "last",
-                          "1": "arrow",
-                          "2": "text",
-                          "3": "box",
-                          "4": "line",
-                          "5": "sphere",
-                          "6": "cylinder",
-                          "7": "pyramid",
-                          "8": "ellipsoid",
-                          "9": "cone"
-                        }
-                      }
-                    ]
-                  },
-                  {
-                    "name": "shape_data",
-                    "type": [
-                      "switch",
-                      {
-                        "compareTo": "shape_data_type",
-                        "fields": {
-                          "last": "void",
-                          "arrow": [
-                            "container",
-                            [
-                              {
-                                "name": "arrow_end_location",
-                                "type": [
-                                  "option",
-                                  "vec3f"
-                                ]
-                              },
-                              {
-                                "name": "arrow_head_length",
-                                "type": [
-                                  "option",
-                                  "lf32"
-                                ]
-                              },
-                              {
-                                "name": "arrow_head_radius",
-                                "type": [
-                                  "option",
-                                  "lf32"
-                                ]
-                              },
-                              {
-                                "name": "segments",
-                                "type": [
-                                  "option",
-                                  "u8"
-                                ]
-                              }
-                            ]
-                          ],
-                          "text": [
-                            "container",
-                            [
-                              {
-                                "name": "text",
-                                "type": "string"
-                              },
-                              {
-                                "name": "use_rotation",
-                                "type": "bool"
-                              },
-                              {
-                                "name": "background_color",
-                                "type": [
-                                  "option",
-                                  "beargb"
-                                ]
-                              },
-                              {
-                                "name": "line_gap_height",
-                                "type": "lf32"
-                              },
-                              {
-                                "name": "depth_test",
-                                "type": "bool"
-                              },
-                              {
-                                "name": "show_backface",
-                                "type": "bool"
-                              },
-                              {
-                                "name": "show_backface_text",
-                                "type": "bool"
-                              }
-                            ]
-                          ],
-                          "box": [
-                            "container",
-                            [
-                              {
-                                "name": "box_bound",
-                                "type": "vec3f"
-                              }
-                            ]
-                          ],
-                          "line": [
-                            "container",
-                            [
-                              {
-                                "name": "line_end_location",
-                                "type": "vec3f"
-                              }
-                            ]
-                          ],
-                          "sphere": [
-                            "container",
-                            [
-                              {
-                                "name": "segments",
-                                "type": "u8"
-                              }
-                            ]
-                          ],
-                          "cylinder": [
-                            "container",
-                            [
-                              {
-                                "name": "radius_x",
-                                "type": "vec2f"
-                              },
-                              {
-                                "name": "radius_z",
-                                "type": "vec2f"
-                              },
-                              {
-                                "name": "height",
-                                "type": "lf32"
-                              },
-                              {
-                                "name": "num_segments",
-                                "type": "u8"
-                              }
-                            ]
-                          ],
-                          "pyramid": [
-                            "container",
-                            [
-                              {
-                                "name": "width",
-                                "type": "lf32"
-                              },
-                              {
-                                "name": "depth",
-                                "type": [
-                                  "option",
-                                  "lf32"
-                                ]
-                              },
-                              {
-                                "name": "height",
-                                "type": "lf32"
-                              }
-                            ]
-                          ],
-                          "ellipsoid": [
-                            "container",
-                            [
-                              {
-                                "name": "radii",
-                                "type": "vec3f"
-                              },
-                              {
-                                "name": "segments_per_axis",
-                                "type": "u8"
-                              }
-                            ]
-                          ],
-                          "cone": [
-                            "container",
-                            [
-                              {
-                                "name": "radii",
-                                "type": "vec2f"
-                              },
-                              {
-                                "name": "height",
-                                "type": "lf32"
-                              },
-                              {
-                                "name": "num_segments",
-                                "type": "u8"
-                              }
-                            ]
-                          ]
-                        }
-                      }
-                    ]
-                  }
-                ]
-              ]
             }
           ]
         }
@@ -16664,128 +16756,72 @@
           "type": "ServerSoundHandle"
         },
         {
-          "name": "stop",
+          "name": "type",
           "type": [
-            "option",
-            [
-              "container",
-              [
-                {
-                  "name": "unused",
-                  "type": "varint"
-                }
-              ]
-            ]
+            "mapper",
+            {
+              "type": "u8",
+              "mappings": {
+                "0": "stop",
+                "1": "set_volume",
+                "2": "set_pitch",
+                "3": "fade",
+                "4": "seek_to",
+                "5": "pause",
+                "6": "resume"
+              }
+            }
           ]
         },
         {
-          "name": "volume",
+          "anon": true,
           "type": [
-            "option",
-            [
-              "container",
-              [
-                {
-                  "name": "unused",
-                  "type": "varint"
-                },
-                {
-                  "name": "volume",
-                  "type": "lf32"
-                }
-              ]
-            ]
-          ]
-        },
-        {
-          "name": "pitch",
-          "type": [
-            "option",
-            [
-              "container",
-              [
-                {
-                  "name": "unused",
-                  "type": "varint"
-                },
-                {
-                  "name": "pitch",
-                  "type": "lf32"
-                }
-              ]
-            ]
-          ]
-        },
-        {
-          "name": "fade",
-          "type": [
-            "option",
-            [
-              "container",
-              [
-                {
-                  "name": "unused",
-                  "type": "varint"
-                },
-                {
-                  "name": "target_volume",
-                  "type": "lf32"
-                },
-                {
-                  "name": "duration",
-                  "type": "lf32"
-                }
-              ]
-            ]
-          ]
-        },
-        {
-          "name": "seek_to",
-          "type": [
-            "option",
-            [
-              "container",
-              [
-                {
-                  "name": "unused",
-                  "type": "varint"
-                },
-                {
-                  "name": "seconds",
-                  "type": "lf32"
-                }
-              ]
-            ]
-          ]
-        },
-        {
-          "name": "pause",
-          "type": [
-            "option",
-            [
-              "container",
-              [
-                {
-                  "name": "unused",
-                  "type": "varint"
-                }
-              ]
-            ]
-          ]
-        },
-        {
-          "name": "resume",
-          "type": [
-            "option",
-            [
-              "container",
-              [
-                {
-                  "name": "unused",
-                  "type": "varint"
-                }
-              ]
-            ]
+            "switch",
+            {
+              "compareTo": "type",
+              "fields": {
+                "set_volume": [
+                  "container",
+                  [
+                    {
+                      "name": "volume",
+                      "type": "lf32"
+                    }
+                  ]
+                ],
+                "set_pitch": [
+                  "container",
+                  [
+                    {
+                      "name": "pitch",
+                      "type": "lf32"
+                    }
+                  ]
+                ],
+                "fade": [
+                  "container",
+                  [
+                    {
+                      "name": "duration",
+                      "type": "lf32"
+                    },
+                    {
+                      "name": "target_volume",
+                      "type": "lf32"
+                    }
+                  ]
+                ],
+                "seek_to": [
+                  "container",
+                  [
+                    {
+                      "name": "seconds",
+                      "type": "lf32"
+                    }
+                  ]
+                ]
+              }
+            }
           ]
         }
       ]
@@ -16854,6 +16890,218 @@
         {
           "name": "handle",
           "type": "lu64"
+        }
+      ]
+    ],
+    "packet_clientbound_matchmaking_state": [
+      "container",
+      [
+        {
+          "name": "state",
+          "type": [
+            "mapper",
+            {
+              "type": "u8",
+              "mappings": {
+                "0": "idle",
+                "1": "matchmaking",
+                "2": "match_found",
+                "3": "canceled",
+                "4": "player_left_party",
+                "5": "player_left_server",
+                "6": "server_shutdown",
+                "7": "timed_out",
+                "8": "requeue_as_party"
+              }
+            }
+          ]
+        },
+        {
+          "name": "destination_name",
+          "type": "string"
+        },
+        {
+          "name": "options",
+          "type": [
+            "option",
+            [
+              "container",
+              [
+                {
+                  "name": "triggering_player_name",
+                  "type": [
+                    "option",
+                    "string"
+                  ]
+                },
+                {
+                  "name": "triggered_by_local_player",
+                  "type": [
+                    "option",
+                    "bool"
+                  ]
+                }
+              ]
+            ]
+          ]
+        }
+      ]
+    ],
+    "packet_serverbound_stonecutter_set_recipe": [
+      "container",
+      [
+        {
+          "name": "container_id",
+          "type": "u8"
+        },
+        {
+          "name": "recipe_index",
+          "type": "varint"
+        }
+      ]
+    ],
+    "packet_clientbound_stonecutter_set_recipe": [
+      "container",
+      [
+        {
+          "name": "player_unique_id",
+          "type": "zigzag64"
+        },
+        {
+          "name": "container_id",
+          "type": "u8"
+        },
+        {
+          "name": "recipe_index",
+          "type": "varint"
+        }
+      ]
+    ],
+    "packet_serverbound_matchmaking_cancel": [
+      "container",
+      []
+    ],
+    "packet_set_passenger_of_block": [
+      "container",
+      [
+        {
+          "name": "entity_unique_id",
+          "type": "zigzag64"
+        },
+        {
+          "name": "data",
+          "type": [
+            "option",
+            "PassengerOfBlockData"
+          ]
+        }
+      ]
+    ],
+    "packet_serverbound_cursor_item_drag": [
+      "container",
+      [
+        {
+          "name": "state",
+          "type": [
+            "mapper",
+            {
+              "type": "u8",
+              "mappings": {
+                "0": "start",
+                "1": "stop"
+              }
+            }
+          ]
+        }
+      ]
+    ],
+    "packet_clientbound_play_audio_content": [
+      "container",
+      [
+        {
+          "name": "shared_metadata",
+          "type": "string"
+        },
+        {
+          "name": "playback_content",
+          "type": "string"
+        },
+        {
+          "name": "playback_type",
+          "type": "string"
+        },
+        {
+          "name": "name",
+          "type": "string"
+        },
+        {
+          "name": "coordinates",
+          "type": "BlockCoordinates"
+        },
+        {
+          "name": "volume",
+          "type": "lf32"
+        },
+        {
+          "name": "pitch",
+          "type": "lf32"
+        },
+        {
+          "name": "loop_count",
+          "type": "varint"
+        },
+        {
+          "name": "bypass_listener_range_check",
+          "type": "bool"
+        },
+        {
+          "name": "handle",
+          "type": [
+            "option",
+            "lu64"
+          ]
+        },
+        {
+          "name": "playback_position_seconds",
+          "type": [
+            "option",
+            "lf32"
+          ]
+        }
+      ]
+    ],
+    "packet_serverbound_register_audio_content": [
+      "container",
+      [
+        {
+          "name": "registrations",
+          "type": [
+            "array",
+            {
+              "countType": "varint",
+              "type": [
+                "container",
+                [
+                  {
+                    "name": "audio_content_id",
+                    "type": "string"
+                  },
+                  {
+                    "name": "shared_metadata",
+                    "type": "string"
+                  },
+                  {
+                    "name": "server_content",
+                    "type": "string"
+                  },
+                  {
+                    "name": "playback_content",
+                    "type": "string"
+                  }
+                ]
+              ]
+            }
+          ]
         }
       ]
     ]

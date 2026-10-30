@@ -22,7 +22,7 @@ async function createRelay(realm) {
             console.log(`${data.message}`);
         }),
         omitParseErrors: false,
-        protocolVersion: 2193,
+        protocolVersion: 2225,
         compressionAlgorithm: "deflate",
         compressionLevel: 7,
         compressionThreshold: 512,

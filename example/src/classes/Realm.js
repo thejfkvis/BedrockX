@@ -8,9 +8,9 @@ class RealmAPI extends XboxAPI {
             "Accept": "*/*",
             "charset": "utf-8",
             "client-ref": "040cca85d792e94e6fe087503108295846d4933d",
-            "client-version": "1.26.50",
+            "client-version": "1.26.60",
             "x-clientplatform": "iOS",
-            "x-networkprotocolversion": "2193",
+            "x-networkprotocolversion": "2225",
             "content-type": "application/json",
             "user-agent": "MCPE/IOS",
             "Accept-Language": "en-US",
@@ -126,10 +126,10 @@ class RealmAPI extends XboxAPI {
         })
 
         if (res.status === 204) return "success";
-        
-        return "false;
+
+        return "false";
     }
-    
+
     async getRealmIP(realmID) {
         while (true) {
             const response = await fetch(`https://${this.endpoint}/worlds/${realmID}/join`, {

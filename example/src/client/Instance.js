@@ -14,7 +14,7 @@ async function createInstance(realm, RAPI) {
         deviceType: "iOS",
         flow: "sisu",
 
-        protocolVersion: 2193,
+        protocolVersion: 2225,
         authflow: new Authflow(undefined, "./auth", {
             flow: "sisu",
             authTitle: Titles.MinecraftIOS,

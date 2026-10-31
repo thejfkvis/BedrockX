@@ -2309,7 +2309,7 @@
         },
         {
           "name": "trusted",
-          "type": "bool"
+          "type": "string"
         },
         {
           "name": "profile_hash",
@@ -7267,7 +7267,7 @@
       "container",
       [
         {
-          "name": "line_end_location",
+          "name": "end_location",
           "type": "vec3f"
         }
       ]
